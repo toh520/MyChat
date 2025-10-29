@@ -1,0 +1,12 @@
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/CMakeFiles/edit_cache.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/CMakeFiles/rebuild_cache.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/CMakeFiles/client_app.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/CMakeFiles/edit_cache.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/CMakeFiles/rebuild_cache.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/CMakeFiles/client_app_autogen_timestamp_deps.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/CMakeFiles/client_app_autogen.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/CMakeFiles/server_app.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/CMakeFiles/edit_cache.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/CMakeFiles/rebuild_cache.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/CMakeFiles/server_app_autogen_timestamp_deps.dir
+D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/CMakeFiles/server_app_autogen.dir
