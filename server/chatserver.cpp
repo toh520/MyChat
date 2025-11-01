@@ -8,11 +8,14 @@
 #include <QJsonParseError> //捕获json解析错误
 #include <QJsonArray>
 #include <QDataStream>
+#include <QFile>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject{parent}
 {
+    loadUsers();//读用户数据
     tcpServer = new QTcpServer(this);
+
 }
 
 void ChatServer::startServer(quint16 port)
@@ -165,17 +168,29 @@ void ChatServer::processLoginRequest(QTcpSocket *clientSocket, const QJsonObject
     QString password = json["password"].toString();
 
     //登录验证
+
+
+    //确定的用户名登录
+    bool success = false;// 默认登录失败
+
+    if(registeredUsers.contains(account)){//账号存在
+        if(registeredUsers.value(account)==password){//密码正确
+            success = true;
+        }
+    }
+
     QJsonObject response;
     response["type"]="login_response";
+    response["success"]=success;
 
-    if(password=="123456"){
+
+    if(success){
         qInfo()<<"账号："<<account<<"登录成功";
 
         //关联账号与socket
         socketUserMap.insert(clientSocket,account);
         userSocketMap.insert(account,clientSocket);
 
-        response["success"]=true;
         response["message"]="登录成功，欢迎";
 
         //解决登录后没有用户列表
@@ -203,9 +218,8 @@ void ChatServer::processLoginRequest(QTcpSocket *clientSocket, const QJsonObject
 
 
     }else{
-        qWarning()<<"账号："<<account<<"登录失败，密码错误";
-        response["success"]=false;
-        response["message"]="登录失败，密码错误";
+        qWarning() << "登录失败：用户名" << account << "或密码错误。";
+        response["message"]="登录失败，账号或密码错误";
     }
 
     sendMessage(clientSocket,response);//发送消息回客户端
@@ -302,4 +316,36 @@ void ChatServer::broadcastUserList()
     for(QTcpSocket *client:clientConnections){
         sendMessage(client,userListJson);
     }
+}
+
+void ChatServer::loadUsers()
+{
+    QFile usersFile("users.json");
+    if (!usersFile.open(QIODevice::ReadOnly)) {
+        qWarning() << "无法打开 users.json 文件！请确保它和服务器程序在同一个目录下。";
+        return;
+    }
+
+    QByteArray fileData = usersFile.readAll();
+    usersFile.close();
+
+    QJsonDocument doc = QJsonDocument::fromJson(fileData);
+    if(!doc.isArray()){
+        qWarning() << "users.json 的格式不正确，根元素必须是一个数组";
+        return;
+    }
+
+    //遍历账号密码
+    QJsonArray usersArray = doc.array();
+    for(const QJsonValue &userValue:usersArray){
+        QJsonObject userObject = userValue.toObject();
+        QString username = userObject["username"].toString();
+        QString password = userObject["password"].toString();
+        //存入
+        if (!username.isEmpty() && !password.isEmpty()) {
+            registeredUsers.insert(username, password);
+        }
+    }
+    qInfo() << "成功加载了" << registeredUsers.count() << "个用户账户";
+
 }

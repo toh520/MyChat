@@ -25,6 +25,7 @@ private:
     QList<QTcpSocket*> clientConnections;//存放客户的列表
     QMap<QTcpSocket*,QString> socketUserMap;//记录 Socket -> 用户名 的映射:“键-值”映射
     QMap<QString,QTcpSocket*> userSocketMap;//反向查找用
+    QMap<QString,QString> registeredUsers;//账号和他们的密码
 
 private:
     void processMessage(QTcpSocket *clientSocket, const QJsonObject &json);//各类消息的处理中枢
@@ -33,6 +34,7 @@ private:
     void processChatMessage(QTcpSocket *senderSocket,const QJsonObject &json);//专门处理群聊聊天信息
     void processPrivateMessage(QTcpSocket *senderSocket,const QJsonObject &json);//私聊
     void broadcastUserList();//收集当前所有用户名并广播出去
+    void loadUsers();//json文件里加载用户的函数
 
 
 

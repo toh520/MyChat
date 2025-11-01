@@ -67,3 +67,17 @@
 165	1675	7837043589175083	client/CMakeFiles/client_app.dir/mainwindow.cpp.obj	5bba17b4f84a617d
 167	1844	7837043589196004	client/CMakeFiles/client_app.dir/chatwindow.cpp.obj	8a62c6b94129c8c7
 1844	2086	7837043605968382	client/client_app.exe	71edb1f913c69711
+39	742	7837059728835717	server/server_app_autogen/timestamp	bcbe1e4dada2855f
+39	742	7837059728835717	server/server_app_autogen/mocs_compilation.cpp	bcbe1e4dada2855f
+39	742	7837059728835717	D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_autogen/timestamp	bcbe1e4dada2855f
+39	742	7837059728835717	D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_autogen/mocs_compilation.cpp	bcbe1e4dada2855f
+742	1679	7837059729421511	server/CMakeFiles/server_app.dir/server_app_autogen/mocs_compilation.cpp.obj	2ceb70d9e7bd2f5b
+745	1741	7837059729450944	server/CMakeFiles/server_app.dir/main.cpp.obj	a9bcd8a08ba9bed0
+747	2584	7837059729485028	server/CMakeFiles/server_app.dir/chatserver.cpp.obj	98c4faa17493c451
+2585	2969	7837059747857362	server/server_app.exe	84416a6367696192
+39	162	7837066960507291	server/server_app_autogen/timestamp	bcbe1e4dada2855f
+39	162	7837066960507291	server/server_app_autogen/mocs_compilation.cpp	bcbe1e4dada2855f
+39	162	7837066960507291	D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_autogen/timestamp	bcbe1e4dada2855f
+39	162	7837066960507291	D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_autogen/mocs_compilation.cpp	bcbe1e4dada2855f
+162	1974	7837066961738782	server/CMakeFiles/server_app.dir/chatserver.cpp.obj	98c4faa17493c451
+1974	2351	7837066979853135	server/server_app.exe	84416a6367696192
