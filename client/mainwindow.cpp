@@ -7,6 +7,8 @@
 //登录界面
 #include "chatwindow.h"
 
+#define IP "127.0.0.1"
+#define PORT 8888
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -79,9 +81,10 @@ void MainWindow::on_loginButton_clicked()
     ui->errorLabel->setText("");
 
     qDebug()<<"正在尝试连接到服务器...";
-    // 我们暂时硬编码服务器地址和端口，localhost代表本机
+    //获取ip地址
+    QString serverIp = ui->ipLineEdit->text();
     // 8888是我们为服务器预留的端口号
-    socket->connectToHost("localhost",8888);
+    socket->connectToHost(serverIp,PORT);
     // 注意：connectToHost是异步操作，它会立即返回，
     // 连接是否成功，需要通过稍后的信号来判断。
 
@@ -148,9 +151,9 @@ void MainWindow::onSocketReadyRead()
             QString message = jsonObj["message"].toString();
             if (success) {
                 QJsonArray usersArray=jsonObj["users"].toArray();
-
+                QString userName=ui->accountLineEdit->text();
                 // 登录成功，交接给ChatWindow
-                ChatWindow *chatWin = new ChatWindow(this->socket,usersArray);
+                ChatWindow *chatWin = new ChatWindow(this->socket,usersArray,userName);
                 chatWin->show();
                 this->hide();
             } else {

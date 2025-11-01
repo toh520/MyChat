@@ -12,6 +12,7 @@ client_app_autogen/timestamp: \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QList \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/QMap \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QObject \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QRect \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QSize \

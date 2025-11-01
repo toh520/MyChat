@@ -78,8 +78,12 @@ void ChatServer::handleClientDisconnected()
         return;
     }
 
+    QString account=socketUserMap.value(clientSocket);
     //移除退出的用户
     socketUserMap.remove(clientSocket);
+    if(!account.isEmpty()){
+        userSocketMap.remove(account);
+    }
     clientConnections.removeOne(clientSocket);
 
 
@@ -142,6 +146,8 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
         }else if(type=="chat_message"){
             //qInfo()<<"收到一条聊天信息："<<json["text"].toString();
             processChatMessage(clientSocket,json);;
+        }else if(type=="private_message"){
+            processPrivateMessage(clientSocket,json);
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -167,6 +173,7 @@ void ChatServer::processLoginRequest(QTcpSocket *clientSocket, const QJsonObject
 
         //关联账号与socket
         socketUserMap.insert(clientSocket,account);
+        userSocketMap.insert(account,clientSocket);
 
         response["success"]=true;
         response["message"]="登录成功，欢迎";
@@ -249,6 +256,32 @@ void ChatServer::processChatMessage(QTcpSocket *senderSocket, const QJsonObject 
     for(QTcpSocket *otherSocket:clientConnections){
         sendMessage(otherSocket,broadcastJson);
     }
+}
+
+void ChatServer::processPrivateMessage(QTcpSocket *senderSocket, const QJsonObject &json)
+{
+    QString recipientName = json["recipient"].toString();
+    QString text = json["text"].toString();
+    QString senderName = socketUserMap.value(senderSocket);
+    //获取接收者的socket
+    QTcpSocket *recipientSocket = userSocketMap.value(recipientName,nullptr);
+
+    QJsonObject privateMessageJson;
+    privateMessageJson["type"] = "new_private_message"; // 使用新的类型，以便客户端区分
+    privateMessageJson["sender"] = senderName;
+    privateMessageJson["text"] = text;
+
+    if(recipientSocket){
+        sendMessage(recipientSocket,privateMessageJson);
+        qInfo() << "私聊消息从" << senderName << "成功转发给" << recipientName;
+    }else{
+        //没有找到接收方的socket
+        qWarning() << senderName << "尝试向离线用户" << recipientName << "发送消息。";
+    }
+
+    // //自己窗口也要显示消息
+    // sendMessage(senderSocket,privateMessageJson);
+
 }
 
 void ChatServer::broadcastUserList()

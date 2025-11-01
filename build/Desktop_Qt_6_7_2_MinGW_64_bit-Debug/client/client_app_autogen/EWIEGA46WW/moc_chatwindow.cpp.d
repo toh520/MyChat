@@ -3,6 +3,7 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QMap \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20type_traits.h \

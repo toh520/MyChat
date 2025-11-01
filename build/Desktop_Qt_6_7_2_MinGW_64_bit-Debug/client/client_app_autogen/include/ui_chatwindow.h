@@ -11,12 +11,10 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
-#include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QPushButton>
-#include <QtWidgets/QTextBrowser>
-#include <QtWidgets/QVBoxLayout>
+#include <QtWidgets/QTabWidget>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -25,49 +23,32 @@ class Ui_ChatWindow
 {
 public:
     QListWidget *userListWidget;
-    QWidget *widget;
-    QVBoxLayout *verticalLayout;
-    QTextBrowser *messageBrowser;
-    QHBoxLayout *horizontalLayout;
-    QLineEdit *messageLineEdit;
     QPushButton *sendButton;
+    QLineEdit *messageLineEdit;
+    QTabWidget *chatTabWidget;
 
     void setupUi(QWidget *ChatWindow)
     {
         if (ChatWindow->objectName().isEmpty())
             ChatWindow->setObjectName("ChatWindow");
-        ChatWindow->resize(414, 242);
+        ChatWindow->resize(324, 240);
         userListWidget = new QListWidget(ChatWindow);
         userListWidget->setObjectName("userListWidget");
         userListWidget->setGeometry(QRect(10, 10, 121, 221));
-        widget = new QWidget(ChatWindow);
-        widget->setObjectName("widget");
-        widget->setGeometry(QRect(140, 10, 258, 219));
-        verticalLayout = new QVBoxLayout(widget);
-        verticalLayout->setObjectName("verticalLayout");
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
-        messageBrowser = new QTextBrowser(widget);
-        messageBrowser->setObjectName("messageBrowser");
-
-        verticalLayout->addWidget(messageBrowser);
-
-        horizontalLayout = new QHBoxLayout();
-        horizontalLayout->setObjectName("horizontalLayout");
-        messageLineEdit = new QLineEdit(widget);
-        messageLineEdit->setObjectName("messageLineEdit");
-
-        horizontalLayout->addWidget(messageLineEdit);
-
-        sendButton = new QPushButton(widget);
+        sendButton = new QPushButton(ChatWindow);
         sendButton->setObjectName("sendButton");
-
-        horizontalLayout->addWidget(sendButton);
-
-
-        verticalLayout->addLayout(horizontalLayout);
-
+        sendButton->setGeometry(QRect(260, 210, 51, 18));
+        messageLineEdit = new QLineEdit(ChatWindow);
+        messageLineEdit->setObjectName("messageLineEdit");
+        messageLineEdit->setGeometry(QRect(140, 210, 111, 19));
+        chatTabWidget = new QTabWidget(ChatWindow);
+        chatTabWidget->setObjectName("chatTabWidget");
+        chatTabWidget->setGeometry(QRect(140, 10, 171, 181));
 
         retranslateUi(ChatWindow);
+
+        chatTabWidget->setCurrentIndex(-1);
+
 
         QMetaObject::connectSlotsByName(ChatWindow);
     } // setupUi

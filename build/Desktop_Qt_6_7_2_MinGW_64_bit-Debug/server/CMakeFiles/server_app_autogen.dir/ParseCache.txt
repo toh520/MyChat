@@ -305,5 +305,5 @@ D:/code/qt/Mychat/server/chatserver.h
  mdp:D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/time.h
  mdp:D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/vadefs.h
  mdp:D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/wchar.h
-D:/code/qt/Mychat/server/chatserver.cpp
 D:/code/qt/Mychat/server/main.cpp
+D:/code/qt/Mychat/server/chatserver.cpp

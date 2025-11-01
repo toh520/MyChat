@@ -416,6 +416,7 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QMap
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20type_traits.h
