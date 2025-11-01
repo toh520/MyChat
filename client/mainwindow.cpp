@@ -34,6 +34,13 @@ void MainWindow::closeEvent(QCloseEvent *event)
 {
     if(canClose){
         event->accept();
+    }
+
+    // 关键改动：检查socket的状态
+    // 如果socket从未连接过，那么我们不需要走复杂的异步断开流程,可以直接点x关闭
+    if(socket->state() == QAbstractSocket::UnconnectedState){
+        qDebug() << "Socket从未连接，窗口直接关闭。";
+        event->accept(); // 直接允许关闭
     }else{
         //关闭窗口
         login_Close=true;
@@ -117,38 +124,75 @@ void MainWindow::onSocketConnected()
 
 void MainWindow::onSocketReadyRead()
 {
-    QByteArray data = socket->readAll();
-    qDebug()<<"收到服务器关于登录的回应："<<data;
+    QDataStream in(socket);
+    in.setVersion(QDataStream::Qt_5_12);
 
-    //解析数据
-    QJsonParseError parseError;
-    QJsonDocument doc = QJsonDocument::fromJson(data,&parseError);
-
-    if(parseError.error!=QJsonParseError::NoError||!doc.isObject()){
-        qWarning() << "解析服务器响应失败:" << parseError.errorString();
-        return;
+    // 同样，我们只处理一次，因为登录响应后就交接给ChatWindow了
+    if (incompleteMessageSize == 0) {
+        if (socket->bytesAvailable() < (int)sizeof(qint32)) return;
+        in >> incompleteMessageSize;
     }
-    QJsonObject jsonObj=doc.object();
+    if (socket->bytesAvailable() < incompleteMessageSize) return;
 
-    //json类型
-    if(jsonObj.contains("type")&&jsonObj["type"].toString()=="login_response"){
-        bool success = jsonObj["success"].toBool();
-        QString message = jsonObj["message"].toString();
+    QByteArray messageData;
+    messageData.resize(incompleteMessageSize);
+    in.readRawData(messageData.data(), incompleteMessageSize);
+    incompleteMessageSize = 0; // 重置
 
-        if(success){
-            //QMessageBox::information(this,"登录成功",message);
-            ChatWindow *chatWin = new ChatWindow(this->socket);//套接字传递过去
-            chatWin->show();
+    // 解析登录响应
+    QJsonDocument doc = QJsonDocument::fromJson(messageData);
+    if(doc.isObject()){
+        QJsonObject jsonObj = doc.object();
+        if (jsonObj.contains("type") && jsonObj["type"].toString() == "login_response") {
+            bool success = jsonObj["success"].toBool();
+            QString message = jsonObj["message"].toString();
+            if (success) {
+                QJsonArray usersArray=jsonObj["users"].toArray();
 
-            this->hide();
-
-        }else{
-            QMessageBox::warning(this,"登录失败",message);
-
-            //断开连接
-            socket->disconnectFromHost();
+                // 登录成功，交接给ChatWindow
+                ChatWindow *chatWin = new ChatWindow(this->socket,usersArray);
+                chatWin->show();
+                this->hide();
+            } else {
+                QMessageBox::warning(this, "登录失败", message);
+                socket->disconnectFromHost();
+            }
         }
     }
+    // 注意：这里没有循环，因为我们预期登录响应后，数据流就由ChatWindow接管了
+
+    // QByteArray data = socket->readAll();
+    // qDebug()<<"收到服务器关于登录的回应："<<data;
+
+    // //解析数据
+    // QJsonParseError parseError;
+    // QJsonDocument doc = QJsonDocument::fromJson(data,&parseError);
+
+    // if(parseError.error!=QJsonParseError::NoError||!doc.isObject()){
+    //     qWarning() << "解析服务器响应失败:" << parseError.errorString();
+    //     return;
+    // }
+    // QJsonObject jsonObj=doc.object();
+
+    // //json类型
+    // if(jsonObj.contains("type")&&jsonObj["type"].toString()=="login_response"){
+    //     bool success = jsonObj["success"].toBool();
+    //     QString message = jsonObj["message"].toString();
+
+    //     if(success){
+    //         //QMessageBox::information(this,"登录成功",message);
+    //         ChatWindow *chatWin = new ChatWindow(this->socket);//套接字传递过去
+    //         chatWin->show();
+
+    //         this->hide();
+
+    //     }else{
+    //         QMessageBox::warning(this,"登录失败",message);
+
+    //         //断开连接
+    //         socket->disconnectFromHost();
+    //     }
+    // }
 
 }
 

@@ -2,9 +2,12 @@
 #include <QTcpServer> // 包含完整的QTcpServer类定义
 #include <QTcpSocket>
 #include <QDebug>
+
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QJsonParseError> //捕获json解析错误
+#include <QJsonArray>
+#include <QDataStream>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject{parent}
@@ -76,8 +79,9 @@ void ChatServer::handleClientDisconnected()
     }
 
     //移除退出的用户
+    socketUserMap.remove(clientSocket);
     clientConnections.removeOne(clientSocket);
-    qInfo()<<"一个客户端退出，当前人数为："<<clientConnections.count();
+
 
     // 内存回收
     // 安全地删除socket对象
@@ -85,7 +89,10 @@ void ChatServer::handleClientDisconnected()
     // 它可以防止在槽函数执行期间就删掉对象本身而引发的崩溃
     clientSocket->deleteLater();
 
+    qInfo()<<"一个客户端退出，当前人数为："<<clientConnections.count();
 
+    // 用户下线了，向剩下的人广播最新的用户列表
+    broadcastUserList();
 }
 
 void ChatServer::handleReadyRead()
@@ -132,6 +139,9 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
         QString type = json["type"].toString();
         if(type == "login"){
             processLoginRequest(clientSocket,json);//处理登录请求
+        }else if(type=="chat_message"){
+            //qInfo()<<"收到一条聊天信息："<<json["text"].toString();
+            processChatMessage(clientSocket,json);;
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -154,8 +164,36 @@ void ChatServer::processLoginRequest(QTcpSocket *clientSocket, const QJsonObject
 
     if(password=="123456"){
         qInfo()<<"账号："<<account<<"登录成功";
+
+        //关联账号与socket
+        socketUserMap.insert(clientSocket,account);
+
         response["success"]=true;
         response["message"]="登录成功，欢迎";
+
+        //解决登录后没有用户列表
+        // QList<QString> otherUsers;
+        // for(auto it = socketUserMap.constBegin();it !=socketUserMap.constEnd();++it){
+        //     if(it.key() != clientSocket){
+        //         otherUsers.append(it.value());
+        //     }
+        // }
+
+        // 将登录的用户加到列表里
+        QList<QString> allUsers = socketUserMap.values();
+
+        QJsonArray usersArray;
+        for(const QString & user:allUsers){
+            usersArray.append(user);
+        }
+
+        response["users"]=usersArray;
+
+        sendMessage(clientSocket,response);//告诉当前用户登录成功了
+
+        //广播给所有用户，用户列表更新
+        broadcastUserList();
+
 
     }else{
         qWarning()<<"账号："<<account<<"登录失败，密码错误";
@@ -177,7 +215,58 @@ void ChatServer::sendMessage(QTcpSocket *clientSocket, QJsonObject &json)
     QByteArray data = QJsonDocument(json).toJson(QJsonDocument::Compact);//将JSON对象转换为用于网络传输的QByteArray
     qInfo()<<"向客户端"<<clientSocket->peerAddress().toString()<<"发送消息："<<data;
 
-    clientSocket->write(data);//send
+    //【4字节头部 + 消息体】，解决多json发送时无法解析的问题
+    //获取消息体的实际长度
+    qint32 messageLength=data.size();
+    //创建一个数据流，先写入4字节的长度，再写入消息体
+    QByteArray block;
+    QDataStream out(&block,QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_12);// 确保版本一致
+    out<<messageLength;// 写入4字节的头部
+    out.writeRawData(data.constData(),data.size());// 写入消息体
+
+    //发送这个包含了头部和消息体的完整数据块
+    clientSocket->write(block);//send
 
 
+}
+
+void ChatServer::processChatMessage(QTcpSocket *senderSocket, const QJsonObject &json)
+{
+    qInfo()<<"收到一条消息，准备广播";
+    QString text=json["text"].toString();
+
+    QJsonObject broadcastJson;
+    broadcastJson["type"]="new_chat_message";
+    broadcastJson["text"]=text;
+    QString senderName=socketUserMap.value(senderSocket,"未知用户");
+    broadcastJson["sender"]=senderName;
+    // 暂时用IP:Port作为发送者标识
+    //broadcastJson["sender"]=senderSocket->peerAddress().toString()+":"+QString::number(senderSocket->peerPort());
+
+
+    //对所有用户广播
+    for(QTcpSocket *otherSocket:clientConnections){
+        sendMessage(otherSocket,broadcastJson);
+    }
+}
+
+void ChatServer::broadcastUserList()
+{
+    qInfo()<<"正在向所有客户端广播最新的用户列表...";
+
+    QList<QString> userList=socketUserMap.values();//获取所有账号
+
+    QJsonObject userListJson;
+    userListJson["type"]="user_list_update";
+    //存入用户列表
+    QJsonArray usersArray;
+    for(const QString &user:userList){
+        usersArray.append(user);
+    }
+    userListJson["users"]=usersArray;
+
+    for(QTcpSocket *client:clientConnections){
+        sendMessage(client,userListJson);
+    }
 }

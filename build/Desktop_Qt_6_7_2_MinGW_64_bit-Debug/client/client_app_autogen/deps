@@ -6,6 +6,8 @@ client_app_autogen/timestamp: \
 	D:/code/qt/Mychat/client/main.cpp \
 	D:/code/qt/Mychat/client/mainwindow.cpp \
 	D:/code/qt/Mychat/client/mainwindow.h \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonArray \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError \
@@ -72,6 +74,7 @@ client_app_autogen/timestamp: \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qiodevicebase.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qiterable.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qiterator.h \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonarray.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qjsondocument.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonobject.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonvalue.h \

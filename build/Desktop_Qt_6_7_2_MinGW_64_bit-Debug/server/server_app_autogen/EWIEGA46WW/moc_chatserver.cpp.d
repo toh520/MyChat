@@ -1,6 +1,7 @@
 D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_autogen/EWIEGA46WW/moc_chatserver.cpp: D:/code/qt/Mychat/server/chatserver.h \
   D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_autogen/moc_predefs.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QList \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QMap \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QObject \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h \
@@ -48,6 +49,7 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qlist.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qlogging.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qmalloc.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qmap.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qmath.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qmetacontainer.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qmetatype.h \
@@ -64,6 +66,8 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qrefcount.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qscopedpointer.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qscopeguard.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qshareddata.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qshareddata_impl.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qstring.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qstringalgorithms.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qstringbuilder.h \

@@ -3,6 +3,7 @@
 
 #include <QObject>
 #include <QList>
+#include <QMap>
 
 class QTcpServer;
 class QTcpSocket;
@@ -22,11 +23,14 @@ private slots:
 private:
     QTcpServer *tcpServer;// 服务器接待总机
     QList<QTcpSocket*> clientConnections;//存放客户的列表
+    QMap<QTcpSocket*,QString> socketUserMap;//记录 Socket -> 用户名 的映射:“键-值”映射
 
-
-    void processMessage(QTcpSocket *clientSocket, const QJsonObject &json);//消息处理中枢
+private:
+    void processMessage(QTcpSocket *clientSocket, const QJsonObject &json);//各类消息的处理中枢
     void processLoginRequest(QTcpSocket *clientSocket,const QJsonObject &json);//登录请求
     void sendMessage(QTcpSocket *clientSocket,QJsonObject &json);//发送json消息给客户端
+    void processChatMessage(QTcpSocket *senderSocket,const QJsonObject &json);//专门处理聊天信息
+    void broadcastUserList();//收集当前所有用户名并广播出去
 
 
 

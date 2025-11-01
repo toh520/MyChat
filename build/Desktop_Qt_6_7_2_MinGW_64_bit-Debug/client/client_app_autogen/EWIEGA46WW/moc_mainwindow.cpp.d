@@ -1,5 +1,7 @@
 D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/EWIEGA46WW/moc_mainwindow.cpp: D:/code/qt/Mychat/client/mainwindow.h \
   D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonArray \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError \
@@ -66,6 +68,7 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qiodevicebase.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qiterable.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qiterator.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonarray.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qjsondocument.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonobject.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonvalue.h \

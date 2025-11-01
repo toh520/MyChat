@@ -3,6 +3,8 @@ D:/code/qt/Mychat/client/mainwindow.h
  mmc:Q_OBJECT
  mdp:D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h
  mdp:D:/code/qt/Mychat/client/mainwindow.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonArray
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError
@@ -69,6 +71,7 @@ D:/code/qt/Mychat/client/mainwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qiodevicebase.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qiterable.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qiterator.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonarray.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsondocument.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonobject.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonvalue.h
@@ -410,6 +413,9 @@ D:/code/qt/Mychat/client/chatwindow.h
  mmc:Q_OBJECT
  mdp:D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h
  mdp:D:/code/qt/Mychat/client/chatwindow.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20type_traits.h
@@ -428,6 +434,9 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayalgorithms.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearraylist.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayview.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qcalendar.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qcborcommon.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qcborvalue.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qchar.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qcompare.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qcompare_impl.h
@@ -441,6 +450,7 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qcontiguouscache.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qdarwinhelpers.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qdatastream.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qdatetime.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qdebug.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qendian.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qexceptionhandling.h
@@ -458,9 +468,13 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qiodevicebase.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qiterable.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qiterator.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsondocument.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonobject.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonvalue.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qlatin1stringview.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qline.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qlist.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qlocale.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qlogging.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qmalloc.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qmap.h
@@ -481,6 +495,7 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qprocessordetection.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qrect.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qrefcount.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qregularexpression.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qscopedpointer.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qscopeguard.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qset.h
@@ -522,7 +537,9 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qtversionchecks.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qtypeinfo.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qtypes.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qurl.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qutf8stringview.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/quuid.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qvariant.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qvarlengtharray.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qversiontagging.h

@@ -1,5 +1,8 @@
 D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/EWIEGA46WW/moc_chatwindow.cpp: D:/code/qt/Mychat/client/chatwindow.h \
   D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/q20type_traits.h \
@@ -18,6 +21,9 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayalgorithms.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearraylist.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayview.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qcalendar.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qcborcommon.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qcborvalue.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qchar.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qcompare.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qcompare_impl.h \
@@ -31,6 +37,7 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qcontiguouscache.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qdarwinhelpers.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qdatastream.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qdatetime.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qdebug.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qendian.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qexceptionhandling.h \
@@ -48,9 +55,13 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qiodevicebase.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qiterable.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qiterator.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qjsondocument.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonobject.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qjsonvalue.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qlatin1stringview.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qline.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qlist.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qlocale.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qlogging.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qmalloc.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qmap.h \
@@ -71,6 +82,7 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qprocessordetection.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qrect.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qrefcount.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qregularexpression.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qscopedpointer.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qscopeguard.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qset.h \
@@ -112,7 +124,9 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qtversionchecks.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qtypeinfo.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qtypes.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qurl.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qutf8stringview.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/quuid.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qvariant.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qvarlengtharray.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qversiontagging.h \

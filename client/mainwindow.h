@@ -10,6 +10,8 @@
 #include <QJsonObject>
 #include <QJsonDocument>
 #include <QJsonParseError>
+#include <QDataStream>
+#include <QJsonArray>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -39,6 +41,7 @@ private:
     QTcpSocket *socket;
     bool canClose = false;//用来解决关闭的递归问题，避免死循环
     bool login_Close=false;//判断断开连接时关闭窗口还是登录失败
+    qint32 incompleteMessageSize = 0; // 用于处理“粘包/半包”问题
 
 };
 #endif // MAINWINDOW_H
