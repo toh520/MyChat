@@ -36,6 +36,8 @@ private:
     void broadcastUserList();//收集当前所有用户名并广播出去
     void loadUsers();//json文件里加载用户的函数
 
+    QString getPrivateChatLogFileName(const QString &user1, const QString &user2) const;// 获取私聊记录文件名
+    void appendMessageToLog(const QString &logFileName, const QJsonObject &messageObject);//记录聊天记录
 
 
 signals:

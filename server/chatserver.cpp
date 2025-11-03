@@ -8,12 +8,23 @@
 #include <QJsonParseError> //捕获json解析错误
 #include <QJsonArray>
 #include <QDataStream>
+
 #include <QFile>
+#include <QDir>
+#include <QDateTime>
 
 ChatServer::ChatServer(QObject *parent)
     : QObject{parent}
 {
     loadUsers();//读用户数据
+
+    //创建聊天记录文件用于保存聊天记录
+    QDir logDir("chat_logs");
+    if(!logDir.exists()){
+        qInfo()<<"不存在chat_log文档文件，自动创建";
+        logDir.mkpath(".");//当前目录下创建
+    }
+
     tcpServer = new QTcpServer(this);
 
 }
@@ -260,6 +271,7 @@ void ChatServer::processChatMessage(QTcpSocket *senderSocket, const QJsonObject 
     QJsonObject broadcastJson;
     broadcastJson["type"]="new_chat_message";
     broadcastJson["text"]=text;
+
     QString senderName=socketUserMap.value(senderSocket,"未知用户");
     broadcastJson["sender"]=senderName;
     // 暂时用IP:Port作为发送者标识
@@ -270,6 +282,13 @@ void ChatServer::processChatMessage(QTcpSocket *senderSocket, const QJsonObject 
     for(QTcpSocket *otherSocket:clientConnections){
         sendMessage(otherSocket,broadcastJson);
     }
+
+    QJsonObject logMessage = broadcastJson;
+    logMessage["timestamp"]=QDateTime::currentDateTime().toString(Qt::ISODate);//设置时间
+
+    // 调用之前创建的记录员函数，将消息存入世界频道日志
+    appendMessageToLog("chat_logs/world_channel.json", logMessage);
+
 }
 
 void ChatServer::processPrivateMessage(QTcpSocket *senderSocket, const QJsonObject &json)
@@ -347,5 +366,51 @@ void ChatServer::loadUsers()
         }
     }
     qInfo() << "成功加载了" << registeredUsers.count() << "个用户账户";
+
+}
+
+QString ChatServer::getPrivateChatLogFileName(const QString &user1, const QString &user2) const
+{
+    //为了保证文件不冲突，用统一的文件命名方式
+    // 通过按字母顺序排序用户名,确保文件名始终一致，无论谁是发送者
+    QString sortedUser1 = user1;
+    QString sortedUser2 = user2;
+
+    if (sortedUser1 > sortedUser2) {
+        qSwap(sortedUser1, sortedUser2);
+    }
+
+    return QString("chat_logs/private_%1_%2.json").arg(sortedUser1).arg(sortedUser2);
+}
+
+void ChatServer::appendMessageToLog(const QString &logFileName, const QJsonObject &messageObject)
+{
+    //工作流程是：读取现有的日志文件 -> 解析为JSON数组 -> 将新消息添加到数组末尾 -> 将更新后的数组写回文件
+    QFile logFile(logFileName);
+
+    //读取现有的日志文件
+    QJsonArray logArray;
+    if(logFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QByteArray data = logFile.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if(doc.isArray()){
+            logArray = doc.array();
+        }
+        logFile.close();
+    }
+
+    //将新消息添加到数组末尾
+    logArray.append(messageObject);
+
+    // 将更新后的数组写回文件,WriteOnly会在文件不存在时创建
+    if(logFile.open(QIODevice::WriteOnly | QIODevice::Truncate | QIODevice::Text)){//覆盖写
+        QJsonDocument newDoc(logArray);
+        logFile.write(newDoc.toJson());
+        logFile.close();
+    }else{
+        qWarning() << "无法写入聊天记录文件:" << logFileName;
+    }
+
+
 
 }

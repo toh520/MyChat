@@ -1,0 +1,14 @@
+[
+    {
+        "sender": "11",
+        "text": "你好，我是11，测试世界频道文件内容的第一条消息",
+        "timestamp": "2025-11-03T22:37:40",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "22",
+        "text": "好的，我也试试",
+        "timestamp": "2025-11-03T22:37:54",
+        "type": "new_chat_message"
+    }
+]
