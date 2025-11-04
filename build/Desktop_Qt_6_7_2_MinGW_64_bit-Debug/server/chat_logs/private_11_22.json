@@ -1,0 +1,16 @@
+[
+    {
+        "recipient": "22",
+        "sender": "11",
+        "text": "你好22",
+        "timestamp": "2025-11-04T20:25:12",
+        "type": "new_private_message"
+    },
+    {
+        "recipient": "11",
+        "sender": "22",
+        "text": "你好11",
+        "timestamp": "2025-11-04T20:25:17",
+        "type": "new_private_message"
+    }
+]
