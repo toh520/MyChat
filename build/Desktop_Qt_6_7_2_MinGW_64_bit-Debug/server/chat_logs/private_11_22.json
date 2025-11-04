@@ -12,5 +12,26 @@
         "text": "你好11",
         "timestamp": "2025-11-04T20:25:17",
         "type": "new_private_message"
+    },
+    {
+        "recipient": "22",
+        "sender": "11",
+        "text": "22你哈",
+        "timestamp": "2025-11-04T21:46:15",
+        "type": "new_private_message"
+    },
+    {
+        "recipient": "22",
+        "sender": "11",
+        "text": "你好22，我来测试私聊记录保存",
+        "timestamp": "2025-11-04T22:05:19",
+        "type": "new_private_message"
+    },
+    {
+        "recipient": "22",
+        "sender": "11",
+        "text": "再次测试",
+        "timestamp": "2025-11-04T22:14:56",
+        "type": "new_private_message"
     }
 ]

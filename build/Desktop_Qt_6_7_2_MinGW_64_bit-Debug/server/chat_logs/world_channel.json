@@ -10,5 +10,23 @@
         "text": "好的，我也试试",
         "timestamp": "2025-11-03T22:37:54",
         "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "测试历史聊天功能11",
+        "timestamp": "2025-11-04T21:44:51",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "22",
+        "text": "我也试试",
+        "timestamp": "2025-11-04T21:44:59",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "等人上线",
+        "timestamp": "2025-11-04T21:45:26",
+        "type": "new_chat_message"
     }
 ]

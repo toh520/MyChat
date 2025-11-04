@@ -5,6 +5,10 @@
 #include <QList>
 #include <QMap>
 
+
+
+#define MAX_HISTORY_MESSAGES 10 // 用于限制返回的历史消息最大条数
+
 class QTcpServer;
 class QTcpSocket;
 
@@ -32,6 +36,7 @@ private:
     void processLoginRequest(QTcpSocket *clientSocket,const QJsonObject &json);//登录请求
     void sendMessage(QTcpSocket *clientSocket,QJsonObject &json);//发送json消息给客户端
     void processChatMessage(QTcpSocket *senderSocket,const QJsonObject &json);//专门处理群聊聊天信息
+    void processHistoryRequest(QTcpSocket *clientSocket, const QJsonObject &json); // 处理历史记录请求
     void processPrivateMessage(QTcpSocket *senderSocket,const QJsonObject &json);//私聊
     void broadcastUserList();//收集当前所有用户名并广播出去
     void loadUsers();//json文件里加载用户的函数

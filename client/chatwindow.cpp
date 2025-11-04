@@ -56,6 +56,16 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
 
     sessionBrowsers.insert("world_channel",worldChannelBrowser);
 
+    //加载历史聊天记录
+    QJsonObject historyRequest;
+    historyRequest["type"] = "request_history";
+    historyRequest["channel"] = "world_channel"; // 表明想要的是世界频道的历史
+    //告诉服务器
+    QByteArray dataToSend = QJsonDocument(historyRequest).toJson(QJsonDocument::Compact);
+    Socket->write(dataToSend);
+
+
+
 }
 
 ChatWindow::~ChatWindow()
@@ -180,14 +190,51 @@ void ChatWindow::onSocketReadyRead()
                     v->addWidget(t);
                     int i=ui->chatTabWidget->addTab(w,sender);
                     sessionBrowsers.insert(sender,t);
+                    requestHistoryForChannel(sender);
                 }
 
                 QTextBrowser *browser = sessionBrowsers.value(sender);
                 if(browser){
                     //填入消息内容
                     browser->append(QString("<font color='blue'>[私聊] 来自 %1:</font> %2").arg(sender).arg(text));
-                }
+                }  
+            }else if(type=="history_response"){
+                QString channel = jsonObj["channel"].toString();
+                QJsonArray history = jsonObj["history"].toArray();
 
+                QTextBrowser *browser=sessionBrowsers.value(channel);
+                if(browser){
+                    // 先清空，再加载历史记录
+                    browser->clear();
+
+                    // 将历史消息逐条插入到显示窗口的顶部
+                    for(const QJsonValue &msgValue:history){
+                        QJsonObject msgObj = msgValue.toObject();
+                        QString sender = msgObj["sender"].toString();
+                        QString text = msgObj["text"].toString();
+                        QString timestamp = msgObj["timestamp"].toString(); // 服务器记录的时间戳
+
+                        // 为了区分历史消息，我们可以用不同的颜色或格式
+                        QString formattedMessage;
+                        if (sender == myUsername) { // 如果是自己发的消息
+                            formattedMessage = QString("<font color='gray'>[%1]</font> <font color='green'>[我]:</font> <font color='gray'>%2</font>")
+                                                   .arg(timestamp.left(19).replace("T", " "))
+                                                   .arg(text);
+                        } else { // 别人发的消息
+                            formattedMessage = QString("<font color='gray'>[%1] [%2]: %3</font>")
+                                                   .arg(timestamp.left(19).replace("T", " "))
+                                                   .arg(sender)
+                                                   .arg(text);
+                        }
+                        browser->insertHtml(formattedMessage+"<br>");
+
+                    }
+
+                    // 在历史记录加载完后，显示一条的分割线
+                    if (!history.isEmpty()) {
+                        browser->append("<hr><em><p align='center' style='color:gray;'>--- 以上是历史消息 ---</p></em>");
+                    }
+                }
             }
         }
 
@@ -233,10 +280,31 @@ void ChatWindow::onSocketDisconnected()
     this->close();
 }
 
+void ChatWindow::requestHistoryForChannel(const QString &channel)
+{
+    if (channel.isEmpty()) {
+        return;
+    }
+
+    QJsonObject historyRequest;
+    historyRequest["type"] = "request_history";
+    historyRequest["channel"] = channel;
+
+    QByteArray dataToSend = QJsonDocument(historyRequest).toJson(QJsonDocument::Compact);
+    socket->write(dataToSend);
+
+    qDebug() << "历史消息获取:" << channel;
+}
+
 
 void ChatWindow::on_userListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
     QString clickedUser = item->text();
+
+    // 不能和自己聊天
+    if (clickedUser == myUsername) {
+        return; // 如果双击的是自己，则不做任何事
+    }
 
     // 检查是否已经存在与该用户的私聊标签页
     if(sessionBrowsers.contains(clickedUser)){
@@ -257,6 +325,9 @@ void ChatWindow::on_userListWidget_itemDoubleClicked(QListWidgetItem *item)
 
         int newIndex= ui->chatTabWidget->addTab(privateTab,clickedUser);
         sessionBrowsers.insert(clickedUser,privateBrowser);
+
+        // 当我们第一次创建私聊窗口时，请求这个私聊的历史记录
+        requestHistoryForChannel(clickedUser);
 
         //切换到该页
         ui->chatTabWidget->setCurrentIndex(newIndex);

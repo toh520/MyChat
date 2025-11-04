@@ -31,7 +31,7 @@ private slots:
     void on_sendButton_clicked();//发送消息
     void onSocketReadyRead();// 处理收到的新消息
     void onSocketDisconnected();// 处理服务器断开的情况
-
+    void requestHistoryForChannel(const QString &channel);//用于请求指定频道的历史记录
 
     void on_userListWidget_itemDoubleClicked(QListWidgetItem *item);
 

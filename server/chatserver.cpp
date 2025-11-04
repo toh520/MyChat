@@ -162,6 +162,8 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
             processChatMessage(clientSocket,json);;
         }else if(type=="private_message"){
             processPrivateMessage(clientSocket,json);
+        }else if(type=="request_history"){
+            processHistoryRequest(clientSocket,json);
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -289,6 +291,56 @@ void ChatServer::processChatMessage(QTcpSocket *senderSocket, const QJsonObject 
     // 调用之前创建的记录员函数，将消息存入世界频道日志
     appendMessageToLog("chat_logs/world_channel.json", logMessage);
 
+}
+
+void ChatServer::processHistoryRequest(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    QString channel = json["channel"].toString();
+    QString logFileName;
+
+    if(channel=="world_channel"){//世界频道
+        logFileName="chat_logs/world_channel.json";
+    }else{//私聊
+        QString selfName = socketUserMap.value(clientSocket);
+        if(!selfName.isEmpty()){
+            logFileName = getPrivateChatLogFileName(selfName, channel);
+
+        }else {
+            qWarning() << "一个未登录的用户正在请求历史记录!";
+            return;
+        }
+    }
+
+    QFile logFile(logFileName);
+    QJsonArray fullHistoryArray;
+
+    // 读取日志文件，并解析成 JSON 数组
+    if(logFile.open(QIODevice::ReadOnly | QIODevice::Text)){
+        QByteArray data = logFile.readAll();
+        QJsonDocument doc = QJsonDocument::fromJson(data);
+        if(doc.isArray()){
+            fullHistoryArray=doc.array();
+        }
+        logFile.close();
+    }else{
+        qInfo() << "历史记录文件不存在，无需发送:" << logFileName;
+    }
+
+    //截取最后MAX_HISTORY_MESSAGES条消息
+    QJsonArray limitedHistoryArray;
+    int startIndex = qMax(0,fullHistoryArray.size()-MAX_HISTORY_MESSAGES);
+
+    for (int i = startIndex; i < fullHistoryArray.size(); ++i) {
+        limitedHistoryArray.append(fullHistoryArray.at(i));
+    }
+
+    QJsonObject response;
+    response["type"] = "history_response";
+    response["channel"] = channel;
+    response["history"] = limitedHistoryArray;
+
+    qInfo() << "向客户端发送" << channel << "的" << limitedHistoryArray.count() << "条历史消息";
+    sendMessage(clientSocket, response);
 }
 
 void ChatServer::processPrivateMessage(QTcpSocket *senderSocket, const QJsonObject &json)
