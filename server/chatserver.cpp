@@ -295,7 +295,7 @@ void ChatServer::processPrivateMessage(QTcpSocket *senderSocket, const QJsonObje
 {
     QString recipientName = json["recipient"].toString();
     QString text = json["text"].toString();
-    QString senderName = socketUserMap.value(senderSocket);
+    QString senderName = socketUserMap.value(senderSocket, "未知用户");
     //获取接收者的socket
     QTcpSocket *recipientSocket = userSocketMap.value(recipientName,nullptr);
 
@@ -314,6 +314,15 @@ void ChatServer::processPrivateMessage(QTcpSocket *senderSocket, const QJsonObje
 
     // //自己窗口也要显示消息
     // sendMessage(senderSocket,privateMessageJson);
+
+    //存聊天记录
+    QJsonObject logMessage = privateMessageJson;
+    logMessage["recipient"]=recipientName;
+    logMessage["timestamp"]=QDateTime::currentDateTime().toString(Qt::ISODate);
+    //获取对应的文件名(统一标准)
+    QString logFileName=getPrivateChatLogFileName(senderName,recipientName);
+    // 调用通用的记录员函数，将消息存入专属档案
+    appendMessageToLog(logFileName, logMessage);
 
 }
 
