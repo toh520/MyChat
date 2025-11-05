@@ -192,13 +192,16 @@ client_app_autogen/timestamp: \
 	D:/newQT/6.7.2/mingw_64/include/QtGui/qvectornd.h \
 	D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs.h \
 	D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+	D:/newQT/6.7.2/mingw_64/include/QtNetwork/QHostAddress \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/QTcpSocket \
+	D:/newQT/6.7.2/mingw_64/include/QtNetwork/QUdpSocket \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h \
 	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkglobal.h \
+	D:/newQT/6.7.2/mingw_64/include/QtNetwork/qudpsocket.h \
 	D:/newQT/6.7.2/mingw_64/include/QtWidgets/QMainWindow \
 	D:/newQT/6.7.2/mingw_64/include/QtWidgets/QMessageBox \
 	D:/newQT/6.7.2/mingw_64/include/QtWidgets/QWidget \

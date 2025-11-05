@@ -1,5 +1,6 @@
 D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/EWIEGA46WW/moc_chatwindow.cpp: D:/code/qt/Mychat/client/chatwindow.h \
   D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError \
@@ -158,13 +159,16 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtGui/qtransform.h \
   D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs.h \
   D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+  D:/newQT/6.7.2/mingw_64/include/QtNetwork/QHostAddress \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/QTcpSocket \
+  D:/newQT/6.7.2/mingw_64/include/QtNetwork/QUdpSocket \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkglobal.h \
+  D:/newQT/6.7.2/mingw_64/include/QtNetwork/qudpsocket.h \
   D:/newQT/6.7.2/mingw_64/include/QtWidgets/QWidget \
   D:/newQT/6.7.2/mingw_64/include/QtWidgets/qsizepolicy.h \
   D:/newQT/6.7.2/mingw_64/include/QtWidgets/qtwidgets-config.h \

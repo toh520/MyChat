@@ -99,6 +99,7 @@ void ChatServer::handleClientDisconnected()
         userSocketMap.remove(account);
     }
     clientConnections.removeOne(clientSocket);
+    socketIncompleteMessageSizeMap.remove(clientSocket);
 
 
     // 内存回收
@@ -119,7 +120,7 @@ void ChatServer::handleReadyRead()
     if(!clientSocket){
         return;
     }
-
+    /*
     //获取所有数据
     QByteArray data = clientSocket->readAll();
 
@@ -143,11 +144,51 @@ void ChatServer::handleReadyRead()
     //转换为json
     QJsonObject jsonObj = doc.object();
     processMessage(clientSocket,jsonObj);
+    */
 
+    //  解决粘包问题
 
+    // 获取当前socket上一次未读完的消息大小，默认为0
+    qint32 &incompleteMessageSize = socketIncompleteMessageSizeMap[clientSocket];
 
+    QDataStream in(clientSocket);
+    in.setVersion(QDataStream::Qt_5_12);
 
+    for (;;) { // 使用循环来处理可能粘在一起的多个包
+        // 1. 如果不知道包的长度，先尝试读取4字节的长度头
+        if (incompleteMessageSize == 0) {
+            if (clientSocket->bytesAvailable() < (int)sizeof(qint32)) {
+                return; // 数据不够，等待下一次readyRead
+            }
+            in >> incompleteMessageSize;
+        }
 
+        // 2. 如果知道了长度，但消息体不完整
+        if (clientSocket->bytesAvailable() < incompleteMessageSize) {
+            return; // 消息体不完整，等待下一次readyRead
+        }
+
+        // 3. 读取完整的消息体
+        QByteArray messageData;
+        messageData.resize(incompleteMessageSize);
+        in.readRawData(messageData.data(), incompleteMessageSize);
+
+        // --- 到这里，messageData里就是一个完整的、干净的JSON了 ---
+
+        QJsonParseError parseError;
+        QJsonDocument doc = QJsonDocument::fromJson(messageData, &parseError);
+
+        if (parseError.error == QJsonParseError::NoError && doc.isObject()) {
+            // 解析成功，调用消息处理中枢
+            processMessage(clientSocket, doc.object());
+        } else {
+            qWarning() << "服务器解析JSON失败:" << parseError.errorString() << "原始数据:" << messageData;
+        }
+
+        // 5. 一条消息处理完毕，重置大小，准备处理下一条（如果缓冲区里还有的话）
+        incompleteMessageSize = 0;
+
+    }
 
 }
 
@@ -164,6 +205,10 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
             processPrivateMessage(clientSocket,json);
         }else if(type=="request_history"){
             processHistoryRequest(clientSocket,json);
+        }else if(type == "report_udp_port"){
+            processUdpPortReport(clientSocket,json);
+        }else if (type == "request_call") {
+            processCallRequest(clientSocket, json);
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -375,6 +420,84 @@ void ChatServer::processPrivateMessage(QTcpSocket *senderSocket, const QJsonObje
     QString logFileName=getPrivateChatLogFileName(senderName,recipientName);
     // 调用通用的记录员函数，将消息存入专属档案
     appendMessageToLog(logFileName, logMessage);
+
+}
+
+void ChatServer::processUdpPortReport(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    QString username = socketUserMap.value(clientSocket);
+    if(username.isEmpty()){
+        qWarning() << "一个未登录的客户端尝试报告UDP端口。";
+        return;
+    }
+
+    // 从消息中提取UDP端口号
+    quint16 udpPort = static_cast<quint16>(json["port"].toInt());
+    if (udpPort == 0) {
+        qWarning() << "客户端" << username << "报告了一个无效的UDP端口: 0";
+        return;
+    }
+
+    // 获取客户端的IP地址
+    // 对于版本一（局域网），直接从TCP socket获取的IP地址
+    QString ipAddress = clientSocket->peerAddress().toString();
+
+    // 对于IPv6地址，它可能包含 "::ffff:" 前缀，我们把它清理掉
+    if(ipAddress.startsWith("::ffff:")){
+        ipAddress = ipAddress.mid(7);//从索引为 7 的位置开始的子字符串（包含索引 7 的字符及之后的所有字符）
+    }
+
+    //将 {IP, Port} 存入
+    userUdpAddressMap[username]=qMakePair(ipAddress,udpPort);
+    qInfo() << "已记录用户" << username << "的UDP地址:" << ipAddress << ":" << udpPort;
+
+
+}
+
+void ChatServer::processCallRequest(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    // 识别发起方和接收方
+    QString callerName = socketUserMap.value(clientSocket);
+    QString recipientName = json["recipient"].toString();
+
+    if (callerName.isEmpty() || recipientName.isEmpty()){
+        return;
+    }
+
+    qInfo() << "收到来自" << callerName << "发往" << recipientName << "的通话请求。";
+
+    // 查找接收方的TCP Socket
+    QTcpSocket *recipientSocket = userSocketMap.value(recipientName);
+
+    // 检查接收方是否在线且地址已记录
+    if (recipientSocket && userUdpAddressMap.contains(recipientName) && userUdpAddressMap.contains(callerName)){
+        // 获取双方的UDP地址
+        QPair<QString, quint16> callerAddr = userUdpAddressMap.value(callerName);
+        QPair<QString, quint16> recipientAddr = userUdpAddressMap.value(recipientName);
+
+        // 向发起方(caller)发送接收方(recipient)的地址
+        QJsonObject responseToCaller;
+        responseToCaller["type"] = "call_response";
+        responseToCaller["peer_name"] = recipientName;
+        responseToCaller["peer_ip"] = recipientAddr.first;
+        responseToCaller["peer_port"] = recipientAddr.second;
+        sendMessage(clientSocket, responseToCaller);
+
+
+        // 向接收方(recipient)发送发起方(caller)的地址 (作为来电通知)
+        QJsonObject offerToRecipient;
+        offerToRecipient["type"] = "call_offer";
+        offerToRecipient["peer_name"] = callerName;
+        offerToRecipient["peer_ip"] = callerAddr.first;
+        offerToRecipient["peer_port"] = callerAddr.second;
+        sendMessage(recipientSocket, offerToRecipient);
+
+        qInfo() << "地址交换成功：" << recipientName << "与" << callerName;
+
+    }else {
+        qWarning() << "地址交换失败：接收方" << recipientName << "不在线或未报告UDP地址。";
+
+    }
 
 }
 

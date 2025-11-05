@@ -6,6 +6,7 @@ D:/code/qt/Mychat/server/chatserver.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QList
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QMap
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QObject
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QPair
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/q20type_traits.h
@@ -305,5 +306,5 @@ D:/code/qt/Mychat/server/chatserver.h
  mdp:D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/time.h
  mdp:D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/vadefs.h
  mdp:D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/wchar.h
-D:/code/qt/Mychat/server/chatserver.cpp
 D:/code/qt/Mychat/server/main.cpp
+D:/code/qt/Mychat/server/chatserver.cpp

@@ -40,11 +40,10 @@ constexpr auto qt_meta_stringdata_CLASSChatWindowENDCLASS = QtMocHelpers::string
     "",
     "onSocketReadyRead",
     "onSocketDisconnected",
-    "requestHistoryForChannel",
-    "channel",
     "on_userListWidget_itemDoubleClicked",
     "QListWidgetItem*",
-    "item"
+    "item",
+    "onUdpSocketReadyRead"
 );
 #else  // !QT_MOC_HAS_STRINGDATA
 #error "qtmochelpers.h not found or too old."
@@ -69,14 +68,14 @@ Q_CONSTINIT static const uint qt_meta_data_CLASSChatWindowENDCLASS[] = {
        3,    0,   45,    2, 0x08,    2 /* Private */,
        4,    0,   46,    2, 0x08,    3 /* Private */,
        5,    1,   47,    2, 0x08,    4 /* Private */,
-       7,    1,   50,    2, 0x08,    6 /* Private */,
+       8,    0,   50,    2, 0x08,    6 /* Private */,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,    6,
-    QMetaType::Void, 0x80000000 | 8,    9,
+    QMetaType::Void, 0x80000000 | 6,    7,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -96,12 +95,11 @@ Q_CONSTINIT const QMetaObject ChatWindow::staticMetaObject = { {
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
         // method 'onSocketDisconnected'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        // method 'requestHistoryForChannel'
-        QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<const QString &, std::false_type>,
         // method 'on_userListWidget_itemDoubleClicked'
         QtPrivate::TypeAndForceComplete<void, std::false_type>,
-        QtPrivate::TypeAndForceComplete<QListWidgetItem *, std::false_type>
+        QtPrivate::TypeAndForceComplete<QListWidgetItem *, std::false_type>,
+        // method 'onUdpSocketReadyRead'
+        QtPrivate::TypeAndForceComplete<void, std::false_type>
     >,
     nullptr
 } };
@@ -115,8 +113,8 @@ void ChatWindow::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, 
         case 0: _t->on_sendButton_clicked(); break;
         case 1: _t->onSocketReadyRead(); break;
         case 2: _t->onSocketDisconnected(); break;
-        case 3: _t->requestHistoryForChannel((*reinterpret_cast< std::add_pointer_t<QString>>(_a[1]))); break;
-        case 4: _t->on_userListWidget_itemDoubleClicked((*reinterpret_cast< std::add_pointer_t<QListWidgetItem*>>(_a[1]))); break;
+        case 3: _t->on_userListWidget_itemDoubleClicked((*reinterpret_cast< std::add_pointer_t<QListWidgetItem*>>(_a[1]))); break;
+        case 4: _t->onUdpSocketReadyRead(); break;
         default: ;
         }
     }

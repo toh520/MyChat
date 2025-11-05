@@ -7,6 +7,7 @@ server_app_autogen/timestamp: \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QList \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QMap \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QObject \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/QPair \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/q20functional.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/q20memory.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/q20type_traits.h \

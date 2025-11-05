@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QList>
 #include <QMap>
+#include <QPair>
 
 
 
@@ -30,6 +31,10 @@ private:
     QMap<QTcpSocket*,QString> socketUserMap;//记录 Socket -> 用户名 的映射:“键-值”映射
     QMap<QString,QTcpSocket*> userSocketMap;//反向查找用
     QMap<QString,QString> registeredUsers;//账号和他们的密码
+    QMap<QString,QPair<QString,quint16>> userUdpAddressMap;// 用户名 -> {IP, UDP端口} 的映射
+
+    QMap<QTcpSocket*, qint32> socketIncompleteMessageSizeMap; // 记录每个socket的不完整消息大小,解决粘包问题
+
 
 private:
     void processMessage(QTcpSocket *clientSocket, const QJsonObject &json);//各类消息的处理中枢
@@ -38,8 +43,12 @@ private:
     void processChatMessage(QTcpSocket *senderSocket,const QJsonObject &json);//专门处理群聊聊天信息
     void processHistoryRequest(QTcpSocket *clientSocket, const QJsonObject &json); // 处理历史记录请求
     void processPrivateMessage(QTcpSocket *senderSocket,const QJsonObject &json);//私聊
+    void processUdpPortReport(QTcpSocket *clientSocket, const QJsonObject &json);//处理客户端报告UDP端口的请求
+    void processCallRequest(QTcpSocket *clientSocket, const QJsonObject &json);// 处理通话请求
+
     void broadcastUserList();//收集当前所有用户名并广播出去
     void loadUsers();//json文件里加载用户的函数
+
 
     QString getPrivateChatLogFileName(const QString &user1, const QString &user2) const;// 获取私聊记录文件名
     void appendMessageToLog(const QString &logFileName, const QJsonObject &messageObject);//记录聊天记录

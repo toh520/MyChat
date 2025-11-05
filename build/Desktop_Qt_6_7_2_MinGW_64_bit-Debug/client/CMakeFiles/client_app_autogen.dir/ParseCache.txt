@@ -3,6 +3,7 @@ D:/code/qt/Mychat/client/chatwindow.h
  mmc:Q_OBJECT
  mdp:D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h
  mdp:D:/code/qt/Mychat/client/chatwindow.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonParseError
@@ -161,13 +162,16 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtGui/qtransform.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs_win.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QHostAddress
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QTcpSocket
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QUdpSocket
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkglobal.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qudpsocket.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtWidgets/QWidget
  mdp:D:/newQT/6.7.2/mingw_64/include/QtWidgets/qsizepolicy.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtWidgets/qtwidgets-config.h

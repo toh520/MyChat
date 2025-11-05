@@ -2,7 +2,7 @@
 #include "ui_chatwindow.h"
 #include <QDebug>
 #include <QJsonArray>
-#include <QDataStream>
+//#include <QDataStream>
 
 #include <QTextBrowser>
 #include <QVBoxLayout>
@@ -31,9 +31,7 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     // 2. 将socket的父对象设置为当前窗口，确保内存被正确管理。
     this->socket->setParent(this);
 
-    //信号与槽
-    connect(socket,&QTcpSocket::readyRead,this,&ChatWindow::onSocketReadyRead);
-    connect(socket, &QTcpSocket::disconnected, this, &ChatWindow::onSocketDisconnected);// 我们也需要处理断开连接的情况，以防服务器中途关闭
+
 
     //获取用户列表
     ui->userListWidget->clear();
@@ -60,11 +58,37 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     QJsonObject historyRequest;
     historyRequest["type"] = "request_history";
     historyRequest["channel"] = "world_channel"; // 表明想要的是世界频道的历史
-    //告诉服务器
-    QByteArray dataToSend = QJsonDocument(historyRequest).toJson(QJsonDocument::Compact);
-    Socket->write(dataToSend);
+    // //告诉服务器
+    // QByteArray dataToSend = QJsonDocument(historyRequest).toJson(QJsonDocument::Compact);
+    // Socket->write(dataToSend);
+    sendMessage(historyRequest);
+
+    // 初始话udp
+    udpSocket = new QUdpSocket(this);
+
+    //绑定到一个随机的可用端口
+    if(udpSocket->bind(QHostAddress::Any,0)){//通过 bind(QHostAddress::Any, 0) 来让操作系统为我们选择一个端口
+        quint16 udpPort = udpSocket->localPort();//获取端口
+        qDebug() << "UDP Socket 成功绑定到端口:" << udpPort;
+
+        // 将这个端口号报告给服务器
+        QJsonObject udpReport;
+        udpReport["type"] = "report_udp_port";
+        udpReport["port"] = udpPort;
+
+        sendMessage(udpReport);
+        qDebug() << "已将UDP端口号报告给服务器。";
+
+    }else{
+        qWarning() << "UDP Socket 绑定失败!";
+    }
 
 
+
+    //信号与槽
+    connect(socket,&QTcpSocket::readyRead,this,&ChatWindow::onSocketReadyRead);
+    connect(socket, &QTcpSocket::disconnected, this, &ChatWindow::onSocketDisconnected);// 我们也需要处理断开连接的情况，以防服务器中途关闭
+    connect(udpSocket,&QUdpSocket::readyRead,this,&ChatWindow::onUdpSocketReadyRead);
 
 }
 
@@ -111,11 +135,13 @@ void ChatWindow::on_sendButton_clicked()
     // }
 
 
-    //json转换为qbytearray用来网络传输
-    QByteArray dataToSend = QJsonDocument(messageObject).toJson(QJsonDocument::Compact);//参数QJsonDocument::Compact是一个枚举值，指定转换后的 JSON 格式为紧凑模式（即去除多余的空格、换行，生成一行紧凑的字符串），适合网络传输（减少数据量）或存储。
+    // //json转换为qbytearray用来网络传输
+    // QByteArray dataToSend = QJsonDocument(messageObject).toJson(QJsonDocument::Compact);//参数QJsonDocument::Compact是一个枚举值，指定转换后的 JSON 格式为紧凑模式（即去除多余的空格、换行，生成一行紧凑的字符串），适合网络传输（减少数据量）或存储。
 
-    socket->write(dataToSend);//send
-    qDebug()<<"发送聊天消息："<<dataToSend;
+    // socket->write(dataToSend);//send
+    //qDebug()<<"发送聊天消息："<<dataToSend;
+
+    sendMessage(messageObject);//解决json粘包
 
     QTextBrowser *currentBrowser = sessionBrowsers.value(id);
     if(currentBrowser){
@@ -235,6 +261,31 @@ void ChatWindow::onSocketReadyRead()
                         browser->append("<hr><em><p align='center' style='color:gray;'>--- 以上是历史消息 ---</p></em>");
                     }
                 }
+            }else if(type == "call_response" || type == "call_offer"){//通话模块
+                QString peerName = jsonObj["peer_name"].toString();
+                QString peerIp = jsonObj["peer_ip"].toString();
+                quint16 peerPort = static_cast<quint16>(jsonObj["peer_port"].toInt());
+
+                currentCallPeerAddress.setAddress(peerIp);
+                currentCallPeerPort = peerPort;
+
+                if (type == "call_response") {//作为发起方
+                    qDebug() << "通话请求成功！获取到对方" << peerName << "的UDP地址:" << peerIp << ":" << peerPort;
+
+                    //发送一个 "ping" 来测试UDP通道
+                    QByteArray pingData = "ping";
+                    udpSocket->writeDatagram(pingData,currentCallPeerAddress,currentCallPeerPort);//这是发送UDP数据的核心函数。它是一个“无连接”的发送，直接指定数据、目标地址和目标端口即可。它会立即返回，不会等待对方确认。
+
+                    qDebug() << "已向对方发送UDP 'ping'。";
+                } else { // type == "call_offer"，接收方
+                    qDebug() << "收到来自" << peerName << "的来电！对方UDP地址:" << peerIp << ":" << peerPort;
+
+
+                }
+
+
+            }else{
+
             }
         }
 
@@ -290,8 +341,7 @@ void ChatWindow::requestHistoryForChannel(const QString &channel)
     historyRequest["type"] = "request_history";
     historyRequest["channel"] = channel;
 
-    QByteArray dataToSend = QJsonDocument(historyRequest).toJson(QJsonDocument::Compact);
-    socket->write(dataToSend);
+    sendMessage(historyRequest);
 
     qDebug() << "历史消息获取:" << channel;
 }
@@ -343,5 +393,63 @@ void ChatWindow::on_userListWidget_itemDoubleClicked(QListWidgetItem *item)
     //     ui->chatTargetLabel->setText(QString("正在与 [ %1 ] 私聊... (再次双击可退出)").arg(clickedUser));
     //     qDebug()<<"已进入与" << clickedUser << "的私聊模式。";
     // }
+
+
+    //模拟一下通话，测试
+    QJsonObject callRequest;
+    callRequest["type"] = "request_call";
+    callRequest["recipient"] = clickedUser; // 告诉服务器想和谁通话
+    sendMessage(callRequest); // 使用我们统一的发送函数
+    qDebug() << "向服务器发起与" << clickedUser << "的通话请求。";
+}
+
+void ChatWindow::sendMessage(const QJsonObject &message)
+{
+    if (!socket || !socket->isOpen()) {
+        qWarning() << "尝试通过一个无效或已关闭的TCP socket发送消息。";
+        return;
+    }
+
+    QByteArray dataToSend = QJsonDocument(message).toJson(QJsonDocument::Compact);
+    // 【4字节头部 + 消息体】，解决粘包问题
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_12); // 确保版本一致
+
+    // 写入4字节的头部（消息体长度）
+    out << static_cast<qint32>(dataToSend.size());
+    // 写入消息体
+    out.writeRawData(dataToSend.constData(), dataToSend.size());
+
+    // 发送这个包含了头部和消息体的完整数据块
+    socket->write(block);
+    qDebug() << "已发送json，包含头大小：" << dataToSend.size();
+
+}
+
+void ChatWindow::onUdpSocketReadyRead()
+{
+    // 只要socket里有数据，就一直循环读取
+    while(udpSocket->hasPendingDatagrams()){
+        // 创建一个足够大的缓冲区来接收数据
+        QByteArray datagram;
+        datagram.resize(udpSocket->pendingDatagramSize());
+
+        QHostAddress senderAddress;
+        quint16 senderPort;
+
+        // 读取一个数据包，同时获取发送方的地址和端口
+        udpSocket->readDatagram(datagram.data(),datagram.size(),&senderAddress,&senderPort);
+
+        // 在控制台打印收到的消息
+        qDebug() << "收到来自" << senderAddress.toString() << ":" << senderPort << "的UDP消息:" << datagram;
+
+        //我们一个 "pong" 回复
+        if(datagram == "ping"){
+            QByteArray pong = "pong";
+            udpSocket->writeDatagram(pong,senderAddress,senderPort);
+            qDebug() << "已向对方回复UDP 'pong'。";
+        }
+    }
 }
 

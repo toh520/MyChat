@@ -121,8 +121,21 @@ void MainWindow::onSocketConnected()
     //将JSON对象转换为QByteArray
     QByteArray dataToSend=QJsonDocument(loginObject).toJson(QJsonDocument::Compact);
 
-    //发送数据，socket->write(QByteArray)相当于Winsock的send()，异步，解决阻塞
-    socket->write(dataToSend);
+    // //发送数据，socket->write(QByteArray)相当于Winsock的send()，异步，解决阻塞
+    // socket->write(dataToSend);
+
+    // 【4字节头部 + 消息体】，解决粘包和协议统一问题
+    QByteArray block;
+    QDataStream out(&block, QIODevice::WriteOnly);
+    out.setVersion(QDataStream::Qt_5_12);
+
+    // 写入4字节的头部（消息体长度）
+    out << static_cast<qint32>(dataToSend.size());
+    // 写入消息体
+    out.writeRawData(dataToSend.constData(), dataToSend.size());
+
+    // 发送这个包含了头部和消息体的完整数据块
+    socket->write(block);
 }
 
 void MainWindow::onSocketReadyRead()
