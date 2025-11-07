@@ -2,6 +2,7 @@
 find_package(Qt6 REQUIRED COMPONENTS
     Widgets
     Network
+    Multimedia #语音通话模块
 )
 
 # 开启Qt的自动化工具，它们会帮我们自动处理.ui文件和信号槽
@@ -23,6 +24,7 @@ add_executable(client_app
 target_link_libraries(client_app PRIVATE
     Qt6::Widgets
     Qt6::Network
+    Qt6::Multimedia
 )
 
 

@@ -209,6 +209,8 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
             processUdpPortReport(clientSocket,json);
         }else if (type == "request_call") {
             processCallRequest(clientSocket, json);
+        }else if(type == "hangup_call"){
+            processHangupCall(clientSocket, json);
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -499,6 +501,24 @@ void ChatServer::processCallRequest(QTcpSocket *clientSocket, const QJsonObject 
 
     }
 
+}
+
+void ChatServer::processHangupCall(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    QString senderName = socketUserMap.value(clientSocket);
+    QString recipientName = json["recipient"].toString();
+
+    qInfo() << senderName << "请求挂断与" << recipientName << "的通话。";
+
+    QTcpSocket *recipientSocket =  userSocketMap.value(recipientName);
+
+    if(recipientSocket){
+        QJsonObject hangupNotice;
+        hangupNotice["type"] = "hangup_call";
+        // 我们可以包含挂断方的信息，但对于客户端来说，知道类型就够了
+        hangupNotice["sender"] = senderName;
+        sendMessage(recipientSocket,hangupNotice);
+    }
 }
 
 void ChatServer::broadcastUserList()

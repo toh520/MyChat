@@ -1,6 +1,6 @@
 set(__QT_DEPLOY_TARGET_client_app_FILE D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app.exe)
 set(__QT_DEPLOY_TARGET_client_app_TYPE EXECUTABLE)
-set(__QT_DEPLOY_TARGET_client_app_RUNTIME_DLLS D:/newQT/6.7.2/mingw_64/bin/Qt6Widgets.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Network.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Gui.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Core.dll)
+set(__QT_DEPLOY_TARGET_client_app_RUNTIME_DLLS D:/newQT/6.7.2/mingw_64/bin/Qt6Widgets.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Multimedia.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Gui.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Network.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Core.dll)
 set(__QT_DEPLOY_TARGET_server_app_FILE D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/server/server_app.exe)
 set(__QT_DEPLOY_TARGET_server_app_TYPE EXECUTABLE)
 set(__QT_DEPLOY_TARGET_server_app_RUNTIME_DLLS D:/newQT/6.7.2/mingw_64/bin/Qt6Network.dll;D:/newQT/6.7.2/mingw_64/bin/Qt6Core.dll)

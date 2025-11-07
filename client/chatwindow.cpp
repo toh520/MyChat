@@ -18,6 +18,11 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     : QWidget(parent)
     , ui(new Ui::ChatWindow)
 {
+    //音频格式定义
+    audioFormat.setSampleRate(44100);// 设置采样率：44100Hz
+    audioFormat.setChannelCount(1);// 设置声道数：1 (单声道)
+    audioFormat.setSampleFormat(QAudioFormat::Int16);// 设置样本格式：16位整数
+
     ui->setupUi(this);
     this->socket = Socket;
     this->myUsername=username;
@@ -269,21 +274,34 @@ void ChatWindow::onSocketReadyRead()
                 currentCallPeerAddress.setAddress(peerIp);
                 currentCallPeerPort = peerPort;
 
+                // 解释：无论我是发起方(call_response)还是接收方(call_offer)，
+                // 一旦地址交换成功，就应该启动音频设备。
+                qInfo() << "通话已建立，正在启动音频设备...";
+                startAudio(QMediaDevices::defaultAudioInput(),QMediaDevices::defaultAudioOutput());//返回操作系统当前设置的默认麦克风设备,默认扬声器/耳机设备
+
+                ui->callButton->setVisible(false);   // 隐藏呼叫按钮
+                ui->hangupButton->setVisible(true);  // 显示挂断按钮
+                //
+
                 if (type == "call_response") {//作为发起方
                     qDebug() << "通话请求成功！获取到对方" << peerName << "的UDP地址:" << peerIp << ":" << peerPort;
 
-                    //发送一个 "ping" 来测试UDP通道
-                    QByteArray pingData = "ping";
-                    udpSocket->writeDatagram(pingData,currentCallPeerAddress,currentCallPeerPort);//这是发送UDP数据的核心函数。它是一个“无连接”的发送，直接指定数据、目标地址和目标端口即可。它会立即返回，不会等待对方确认。
+                    // //发送一个 "ping" 来测试UDP通道
+                    // QByteArray pingData = "ping";
+                    // udpSocket->writeDatagram(pingData,currentCallPeerAddress,currentCallPeerPort);//这是发送UDP数据的核心函数。它是一个“无连接”的发送，直接指定数据、目标地址和目标端口即可。它会立即返回，不会等待对方确认。
 
-                    qDebug() << "已向对方发送UDP 'ping'。";
+                    // qDebug() << "已向对方发送UDP 'ping'。";
                 } else { // type == "call_offer"，接收方
                     qDebug() << "收到来自" << peerName << "的来电！对方UDP地址:" << peerIp << ":" << peerPort;
 
-
                 }
+            }else if(type == "hangup_call"){
+                qDebug() << "收到对方的挂断通知。";
 
-
+                // 对方挂断了电话，我们也需要停止音频并更新UI
+                stopAudio();
+                ui->hangupButton->setVisible(false);
+                ui->callButton->setVisible(true);
             }else{
 
             }
@@ -395,12 +413,12 @@ void ChatWindow::on_userListWidget_itemDoubleClicked(QListWidgetItem *item)
     // }
 
 
-    //模拟一下通话，测试
-    QJsonObject callRequest;
-    callRequest["type"] = "request_call";
-    callRequest["recipient"] = clickedUser; // 告诉服务器想和谁通话
-    sendMessage(callRequest); // 使用我们统一的发送函数
-    qDebug() << "向服务器发起与" << clickedUser << "的通话请求。";
+    // //模拟一下通话，测试
+    // QJsonObject callRequest;
+    // callRequest["type"] = "request_call";
+    // callRequest["recipient"] = clickedUser; // 告诉服务器想和谁通话
+    // sendMessage(callRequest); // 使用我们统一的发送函数
+    // qDebug() << "向服务器发起与" << clickedUser << "的通话请求。";
 }
 
 void ChatWindow::sendMessage(const QJsonObject &message)
@@ -427,29 +445,164 @@ void ChatWindow::sendMessage(const QJsonObject &message)
 
 }
 
+void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice &outDevice)
+{
+    // --- 1. 初始化音频输出 (扬声器) ---
+    // 解释：创建一个 QAudioSink 对象，告诉它我们要用哪个设备（outputDevice）
+    // 和哪种音频格式（audioFormat，我们之前在构造函数里定义的）。
+    audioSink = new QAudioSink(outDevice,audioFormat,this);
+    audioOutputDevice = audioSink->start();
+    qInfo()<<"音频输出（扬声器）已启动。";
+    // 解释：audioSink->start() 会返回一个 QIODevice 对象。
+    // 这就像打开了一个文件，我们之后可以向这个“文件”写入数据，
+    // 这些数据就会被送到扬声器播放出来。
+
+    // --- 2. 初始化音频输入 (麦克风) ---
+    //
+    // 解释：和 AudioSink 类似，创建一个 QAudioSource 对象，
+    // 指定要用的设备（inputDevice）和音频格式（audioFormat）。
+    audioSource = new QAudioSource(inputDevice,audioFormat,this);
+    audioInputDevice = audioSource->start();
+    qInfo() << "音频输入（麦克风）已启动。";
+
+    // --- 3. 连接信号与槽 ---
+    //
+    // 解释：这是实现音频数据流动的关键！
+    // 我们告诉 audioInputDevice (代表麦克风的IO设备)，
+    // 每当它有新的音频数据准备好时（即 readyRead() 信号被触发），
+    // 就去调用我们的 onAudioInputReady() 槽函数。
+    connect(audioInputDevice,&QIODevice::readyRead,this,&ChatWindow::onAudioInputReady);
+
+}
+
+void ChatWindow::stopAudio()
+{
+    qInfo() << "正在停止音频设备...";
+
+    // 停止并销毁 QAudioSource (麦克风)
+    if(audioSource){
+        audioSource->stop();
+        delete audioSource;
+        audioSource =  nullptr;
+    }
+
+    // 停止并销毁 QAudioSink (扬声器)
+    if(audioSink){
+        audioSink->stop();
+        delete audioSink;
+        audioSink =  nullptr;
+    }
+    // audioInputDevice 和 audioOutputDevice 不需要手动 delete，
+    // 因为它们是 audioSource 和 audioSink 的一部分，会在上面被一并销毁。
+    audioInputDevice = nullptr;
+    audioOutputDevice = nullptr;
+
+    // 重置通话对端信息
+    currentCallPeerPort = 0;
+    currentCallPeerAddress.clear();
+
+    qInfo() << "音频设备已停止。";
+}
+
 void ChatWindow::onUdpSocketReadyRead()
 {
+    if (!audioOutputDevice) {// 如果 audioOutputDevice 是 nullptr，说明通话还没开始或已经结束
+        return;
+    }
+
     // 只要socket里有数据，就一直循环读取
     while(udpSocket->hasPendingDatagrams()){
         // 创建一个足够大的缓冲区来接收数据
-        QByteArray datagram;
-        datagram.resize(udpSocket->pendingDatagramSize());
+        QNetworkDatagram networkDatagram = udpSocket->receiveDatagram();// 它会自动创建一个合适大小的 QByteArray 来存放数据包，并返回它。
+        const QByteArray &audioData = networkDatagram.data();
+        // 直接用 write() 函数写入到 audioOutputDevice (扬声器设备) 中。
+        // Qt 会自动处理剩下的所有事情，将声音通过扬声器播放出来。
+        if (!audioData.isEmpty()) {
+            audioOutputDevice->write(audioData);
+        }
 
-        QHostAddress senderAddress;
-        quint16 senderPort;
+        // QHostAddress senderAddress;
+        // quint16 senderPort;
 
-        // 读取一个数据包，同时获取发送方的地址和端口
-        udpSocket->readDatagram(datagram.data(),datagram.size(),&senderAddress,&senderPort);
+        // // 读取一个数据包，同时获取发送方的地址和端口
+        // udpSocket->readDatagram(datagram.data(),datagram.size(),&senderAddress,&senderPort);
 
-        // 在控制台打印收到的消息
-        qDebug() << "收到来自" << senderAddress.toString() << ":" << senderPort << "的UDP消息:" << datagram;
+        // // 在控制台打印收到的消息
+        // qDebug() << "收到来自" << senderAddress.toString() << ":" << senderPort << "的UDP消息:" << datagram;
 
-        //我们一个 "pong" 回复
-        if(datagram == "ping"){
-            QByteArray pong = "pong";
-            udpSocket->writeDatagram(pong,senderAddress,senderPort);
-            qDebug() << "已向对方回复UDP 'pong'。";
+        // //我们一个 "pong" 回复
+        // if(datagram == "ping"){
+        //     QByteArray pong = "pong";
+        //     udpSocket->writeDatagram(pong,senderAddress,senderPort);
+        //     qDebug() << "已向对方回复UDP 'pong'。";
+        // }
+    }
+}
+
+void ChatWindow::onAudioInputReady()
+{
+    // 检查一下通话对象是否存在，如果不存在（比如通话已挂断），就什么都不做。
+    if (currentCallPeerPort == 0) {
+        return;
+    }
+
+    // 解释：audioInputDevice->readAll() 从麦克风的缓冲区读取所有可用的新音频数据。
+    // 返回的是一个 QByteArray，里面是原始的PCM音频数据。
+    QByteArray audioData = audioInputDevice->readAll();
+
+    // 解释：我们使用之前已经验证过的 udpSocket->writeDatagram() 函数，
+    // 将刚刚从麦克风读取到的音频数据，直接发送到对方的UDP地址和端口。
+    udpSocket->writeDatagram(audioData,currentCallPeerAddress,currentCallPeerPort);
+
+}
+
+
+void ChatWindow::on_callButton_clicked()
+{
+    int currentIndex = ui->chatTabWidget->currentIndex();
+    if (currentIndex == -1) return; // 如果没有任何标签页，则不执行任何操作
+
+    QString recipientName = ui->chatTabWidget->tabText(currentIndex);
+
+    // 不能和世界频道通话，也不能和自己通话
+    if (recipientName == "世界频道" || recipientName == myUsername) {
+        qWarning() << "无效的通话对象:" << recipientName;
+        return;
+    }
+
+    QJsonObject callRequest;
+    callRequest["type"] = "request_call";
+    callRequest["recipient"] = recipientName;
+    sendMessage(callRequest);
+
+    qDebug() << "呼叫按钮被点击！";
+}
+
+
+void ChatWindow::on_hangupButton_clicked()
+{
+    qDebug() << "挂断按钮被点击！";
+
+    QJsonObject hangupMsg;
+    hangupMsg["type"] = "hangup_call";
+
+    // 注意：我们需要告诉服务器我们要挂断和谁的电话
+    //暂时先从ui获取，后续在增加其他判断方法，提高实用性（和一个人通话，一个人聊天分开）
+    int currentIndex = ui->chatTabWidget->currentIndex();
+    if (currentIndex != -1) {
+        QString peerName = ui->chatTabWidget->tabText(currentIndex);
+        if (peerName != "世界频道") {
+            hangupMsg["recipient"] = peerName;
+            sendMessage(hangupMsg);
         }
     }
+
+    // 立刻停止本地的音频设备
+    stopAudio();
+
+    // 更新UI状态
+    ui->hangupButton->setVisible(false); // 隐藏挂断按钮
+    ui->callButton->setVisible(true);    // 显示呼叫按钮
+
 }
 

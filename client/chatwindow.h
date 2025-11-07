@@ -14,6 +14,12 @@
 
 #include <QDataStream>
 
+//音频头文件
+#include <QAudioSource>
+#include <QAudioSink>
+#include <QAudioDevice>
+#include <QMediaDevices>
+#include <QNetworkDatagram>//接收音频数据
 
 class QListWidgetItem;
 class QTextBrowser;
@@ -37,6 +43,12 @@ private slots:
     void onSocketDisconnected();// 处理服务器断开的情况
     void on_userListWidget_itemDoubleClicked(QListWidgetItem *item);
     void onUdpSocketReadyRead();//处理收到的UDP数据包的槽函数
+    void onAudioInputReady();//当麦克风有新数据时调用的槽函数,从麦克风读取数据，然后通过 UDP 发送出去
+
+
+    void on_callButton_clicked();
+
+    void on_hangupButton_clicked();
 
 private:
     Ui::ChatWindow *ui;
@@ -56,7 +68,16 @@ private:
     void requestHistoryForChannel(const QString &channel);//用于请求指定频道的历史记录
     void sendMessage(const QJsonObject &message);//通用传输数据函数，解决socket》write的json粘包问题
 
+private://音频变量
+    QAudioSource *audioSource = nullptr;
+    QAudioSink *audioSink = nullptr;
+    QIODevice *audioInputDevice = nullptr;  // 用于从麦克风读取数据
+    QIODevice *audioOutputDevice = nullptr; // 用于向扬声器写入数据
+    QAudioFormat audioFormat;               // 用来存储我们定义的音频格式
 
+private://音频函数
+    void startAudio(const QAudioDevice &inputDevice,const QAudioDevice &outDevice);//负责初始化并启动 QAudioSource (麦克风) 和 QAudioSink (扬声器)。
+    void stopAudio();//停止音频流的辅助函数
 };
 
 #endif // CHATWINDOW_H

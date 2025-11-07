@@ -45,6 +45,7 @@ private:
     void processPrivateMessage(QTcpSocket *senderSocket,const QJsonObject &json);//私聊
     void processUdpPortReport(QTcpSocket *clientSocket, const QJsonObject &json);//处理客户端报告UDP端口的请求
     void processCallRequest(QTcpSocket *clientSocket, const QJsonObject &json);// 处理通话请求
+    void processHangupCall(QTcpSocket *clientSocket, const QJsonObject &json);//挂断请求
 
     void broadcastUserList();//收集当前所有用户名并广播出去
     void loadUsers();//json文件里加载用户的函数

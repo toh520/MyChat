@@ -159,11 +159,27 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtGui/qtransform.h \
   D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs.h \
   D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs_win.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QAudioDevice \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QAudioSink \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QAudioSource \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QMediaDevices \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudio.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudiodevice.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudioformat.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudiosink.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudiosource.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qmediadevices.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtaudio.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtmultimedia-config.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtmultimediaexports.h \
+  D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtmultimediaglobal.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/QHostAddress \
+  D:/newQT/6.7.2/mingw_64/include/QtNetwork/QNetworkDatagram \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/QTcpSocket \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/QUdpSocket \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h \
+  D:/newQT/6.7.2/mingw_64/include/QtNetwork/qnetworkdatagram.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h \
   D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h \

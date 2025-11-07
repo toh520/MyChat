@@ -162,11 +162,27 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtGui/qtransform.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtGui/qwindowdefs_win.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QAudioDevice
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QAudioSink
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QAudioSource
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/QMediaDevices
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudio.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudiodevice.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudioformat.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudiosink.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qaudiosource.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qmediadevices.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtaudio.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtmultimedia-config.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtmultimediaexports.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtMultimedia/qtmultimediaglobal.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QHostAddress
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QNetworkDatagram
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QTcpSocket
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/QUdpSocket
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qabstractsocket.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qhostaddress.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qnetworkdatagram.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtcpsocket.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetwork-config.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtNetwork/qtnetworkexports.h

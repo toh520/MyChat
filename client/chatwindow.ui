@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>324</width>
-    <height>240</height>
+    <width>376</width>
+    <height>263</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -57,6 +57,32 @@
    </property>
    <property name="currentIndex">
     <number>-1</number>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="callButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>20</y>
+     <width>56</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>语音通话</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="hangupButton">
+   <property name="geometry">
+    <rect>
+     <x>320</x>
+     <y>60</y>
+     <width>56</width>
+     <height>18</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>挂断</string>
    </property>
   </widget>
  </widget>

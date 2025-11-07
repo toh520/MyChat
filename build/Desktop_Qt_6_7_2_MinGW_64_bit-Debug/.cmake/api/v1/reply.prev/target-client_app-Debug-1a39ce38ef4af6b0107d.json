@@ -45,13 +45,13 @@
 			{
 				"command" : 0,
 				"file" : 0,
-				"line" : 14,
+				"line" : 15,
 				"parent" : 0
 			},
 			{
 				"command" : 1,
 				"file" : 0,
-				"line" : 23,
+				"line" : 24,
 				"parent" : 0
 			},
 			{
@@ -223,6 +223,10 @@
 				},
 				{
 					"backtrace" : 2,
+					"define" : "QT_MULTIMEDIA_LIB"
+				},
+				{
+					"backtrace" : 2,
 					"define" : "QT_NETWORK_LIB"
 				},
 				{
@@ -289,6 +293,11 @@
 					"backtrace" : 2,
 					"isSystem" : true,
 					"path" : "D:/newQT/6.7.2/mingw_64/include/QtNetwork"
+				},
+				{
+					"backtrace" : 2,
+					"isSystem" : true,
+					"path" : "D:/newQT/6.7.2/mingw_64/include/QtMultimedia"
 				}
 			],
 			"language" : "CXX",
@@ -304,11 +313,11 @@
 	"dependencies" : 
 	[
 		{
-			"id" : "client_app_autogen_timestamp_deps::@b0c487aac068df482bf0"
-		},
-		{
 			"backtrace" : 0,
 			"id" : "client_app_autogen::@b0c487aac068df482bf0"
+		},
+		{
+			"id" : "client_app_autogen_timestamp_deps::@b0c487aac068df482bf0"
 		}
 	],
 	"id" : "client_app::@b0c487aac068df482bf0",
@@ -331,7 +340,7 @@
 			},
 			{
 				"backtrace" : 2,
-				"fragment" : "D:\\newQT\\6.7.2\\mingw_64\\lib\\libQt6Network.a",
+				"fragment" : "D:\\newQT\\6.7.2\\mingw_64\\lib\\libQt6Multimedia.a",
 				"role" : "libraries"
 			},
 			{
@@ -357,6 +366,11 @@
 			{
 				"backtrace" : 18,
 				"fragment" : "-ld3d12",
+				"role" : "libraries"
+			},
+			{
+				"backtrace" : 2,
+				"fragment" : "D:\\newQT\\6.7.2\\mingw_64\\lib\\libQt6Network.a",
 				"role" : "libraries"
 			},
 			{
