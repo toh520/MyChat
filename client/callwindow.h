@@ -23,7 +23,6 @@ public:
     // 公开方法，用于从外部控制窗口状态
     void showIncomingCall(const QString &callerName);
     void showInCall(const QString &peerName);
-    void closeAndReset();
 
 signals:
     // 定义信号，用于通知 ChatWindow 用户的操作

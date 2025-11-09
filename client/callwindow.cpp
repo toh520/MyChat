@@ -30,10 +30,6 @@ void callWindow::showInCall(const QString &peerName)
     this->show();
 }
 
-void callWindow::closeAndReset()
-{
-    this->hide();
-}
 
 void callWindow::on_acceptButton_clicked()
 {
@@ -41,18 +37,16 @@ void callWindow::on_acceptButton_clicked()
 
     // ChatWindow 在收到 accept_call 后会调用 showInCall
     // 我们在这里先切换页面，显示一个通用信息
-    ui->inCallStatusLabel->setText("正在连接...");
+    ui->inCallStatusLabel->setText("正在通话...");
     ui->stackedWidget->setCurrentIndex(1);
 }
 
 void callWindow::on_rejectButton_clicked()
 {
     emit rejected(); // 发射“已拒绝”信号
-    closeAndReset(); // 点击拒绝后，窗口自己就可以关掉了
 }
 
 void callWindow::on_hangupButton_clicked()
 {
     emit hangedUp(); // 发射“已挂断”信号
-    closeAndReset(); // 点击挂断后，窗口自己也可以关掉了
 }

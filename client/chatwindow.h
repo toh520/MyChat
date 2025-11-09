@@ -78,6 +78,10 @@ private:
 private://音频变量
     QAudioSource *audioSource = nullptr;
     QAudioSink *audioSink = nullptr;
+    // //===================尝试版本二解决音频问题
+    // QAudioSource *audioSource; // 不要初始化为 nullptr
+    // QAudioSink *audioSink;   // 不要初始化为 nullptr
+    // //=====================
     QIODevice *audioInputDevice = nullptr;  // 用于从麦克风读取数据
     QIODevice *audioOutputDevice = nullptr; // 用于向扬声器写入数据
     QAudioFormat audioFormat;               // 用来存储我们定义的音频格式

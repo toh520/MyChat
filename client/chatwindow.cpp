@@ -9,6 +9,8 @@
 #include <QTextBrowser>
 #include <QVBoxLayout>
 
+#include <QThread>
+
 ChatWindow::ChatWindow(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ChatWindow)
@@ -92,8 +94,8 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     }
 
     //通话窗口
-    // callWin = new callWindow();
-    // callWin->hide(); // 默认是隐藏的
+    //callWin = new callWindow();
+    //callWin->hide(); // 默认是隐藏的
 
     //信号与槽
     connect(socket,&QTcpSocket::readyRead,this,&ChatWindow::onSocketReadyRead);
@@ -136,6 +138,13 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     //     // 立刻停止本地音频
     //     stopAudio();
     // });// 当用户在通话中点击挂断时
+
+    // //=======================
+    // // *** 在构造函数中就创建音频对象，并且只创建这一次！ ***
+    // // 将它们作为 ChatWindow 的子对象，Qt 会自动管理内存
+    // audioSource = new QAudioSource(QMediaDevices::defaultAudioInput(), audioFormat, this);
+    // audioSink = new QAudioSink(QMediaDevices::defaultAudioOutput(), audioFormat, this);
+    // //====================
 }
 
 ChatWindow::~ChatWindow()
@@ -439,7 +448,10 @@ void ChatWindow::onSocketReadyRead()
 
                 // 2. 连接信号
                 // *** 这是最关键的连接：当窗口被销毁时，自动清理一切 ***
-                connect(callWin, &QObject::destroyed, this, &ChatWindow::stopAudio);
+                connect(callWin, &QObject::destroyed, this, [this]() {
+                    qDebug() << "通话窗口被销毁，确保音频已停止";
+                    this->stopAudio();
+                });
 
                 if (type == "call_response") { // 我是呼叫方
                     connect(callWin, &callWindow::hangedUp, this, &ChatWindow::onHangupClicked);
@@ -450,7 +462,10 @@ void ChatWindow::onSocketReadyRead()
                     connect(callWin, &callWindow::rejected, this, &ChatWindow::onRejectClicked);
                     callWin->showIncomingCall(peerName);
                 }
-            } else if (type == "reject_call" || type == "hangup_call") {
+            }else if (type == "accept_call") {
+                qDebug() << "对方已接听，通话正式开始。";
+                // 在这里，A 就明确地知道了 B 已经接听了电话
+            }else if (type == "reject_call" || type == "hangup_call") {
                 qDebug() << "收到对方的 " << type << " 通知，关闭通话窗口。";
                 if (callWin) {
                     callWin->close(); // close() 将会触发 destroyed 信号，进而调用 stopAudio
@@ -603,6 +618,7 @@ void ChatWindow::switchToOrOpenPrivateChat(const QString &username)
 
 }
 
+
 void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice &outDevice)
 {
     // 增加保护，如果音频设备已存在，则先停止并清理
@@ -611,12 +627,32 @@ void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice 
         stopAudio();
     }
 
+    // 检查设备是否可用
+    if (inputDevice.isNull() || outDevice.isNull()) {
+        qCritical() << "音频设备不可用！";
+        return;
+    }
+
+    // 检查格式是否支持
+    if (!inputDevice.isFormatSupported(audioFormat) || !outDevice.isFormatSupported(audioFormat)) {
+        qCritical() << "音频格式不被设备支持！";
+        return;
+    }
+
     // --- 1. 初始化音频输出 (扬声器) ---
     // 解释：创建一个 QAudioSink 对象，告诉它我们要用哪个设备（outputDevice）
     // 和哪种音频格式（audioFormat，我们之前在构造函数里定义的）。
     qInfo() << "正在初始化音频设备...";
     audioSink = new QAudioSink(outDevice,audioFormat,this);
+    if (!audioSink) {
+        qCritical() << "创建 QAudioSink 失败！";
+        return;
+    }
     audioOutputDevice = audioSink->start();
+    if (!audioOutputDevice) {
+        qCritical() << "启动音频输出设备失败！";
+        return;
+    }
     qInfo()<<"音频输出（扬声器）已启动。";
     // 解释：audioSink->start() 会返回一个 QIODevice 对象。
     // 这就像打开了一个文件，我们之后可以向这个“文件”写入数据，
@@ -627,7 +663,15 @@ void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice 
     // 解释：和 AudioSink 类似，创建一个 QAudioSource 对象，
     // 指定要用的设备（inputDevice）和音频格式（audioFormat）。
     audioSource = new QAudioSource(inputDevice,audioFormat,this);
+    if (!audioSource) {
+        qCritical() << "创建 QAudioSource 失败！";
+        return;
+    }
     audioInputDevice = audioSource->start();
+    if (!audioInputDevice) {
+        qCritical() << "启动音频输入设备失败！";
+        return;
+    }
     qInfo() << "音频输入（麦克风）已启动。";
 
     // --- 3. 连接信号与槽 ---
@@ -637,7 +681,7 @@ void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice 
     // 每当它有新的音频数据准备好时（即 readyRead() 信号被触发），
     // 就去调用我们的 onAudioInputReady() 槽函数。
     connect(audioInputDevice,&QIODevice::readyRead,this,&ChatWindow::onAudioInputReady);
-
+    qInfo() << "音频设备初始化完成。";
 }
 
 void ChatWindow::stopAudio()
@@ -680,21 +724,69 @@ void ChatWindow::stopAudio()
     // }
 
     // qInfo() << "音频设备已停止。";
-    qInfo() << "正在执行最终清理 (stopAudio)...";
 
-    // 1. 停止并清理音频设备
+
+    //===================================================
+    qInfo() << "正在停止音频设备...";
+
+    // // 1. 先断开所有连接
+    // if (audioInputDevice) {
+    //     disconnect(audioInputDevice, &QIODevice::readyRead, this, &ChatWindow::onAudioInputReady);
+    //     audioInputDevice = nullptr;
+
+    // }
+
+    // // 2. 停止并删除音频输入设备
+    // if (audioSource) {
+    //     QAudio::State state = audioSource->state();
+    //     qInfo() << "停止音频输入设备，当前状态:" << state;
+
+    //     audioSource->stop();
+    //     // 等待一小段时间确保设备完全停止
+    //     QThread::msleep(50);
+
+    //     delete audioSource;
+    //     audioSource = nullptr;
+    // }
+
+    // // 3. 停止并删除音频输出设备
+    // if (audioSink) {
+    //     QAudio::State state = audioSink->state();
+    //     qInfo() << "停止音频输出设备，当前状态:" << state;
+
+    //     audioSink->stop();
+    //     // 等待一小段时间确保设备完全停止
+    //     QThread::msleep(50);
+
+    //     delete audioSink;
+    //     audioSink = nullptr;
+    // }
+
+    // audioOutputDevice = nullptr;
+
+    // 1. 停止并清理音频输入（麦克风）
     if (audioSource) {
         audioSource->stop();
+        // 等待一小段时间确保设备完全停止
+        QThread::msleep(50);
+        // 当 audioSource 被 delete 时，Qt会自动断开所有与之相关的信号槽连接。
+        // audioInputDevice 指针也会随着 audioSource 的销毁而失效。
         delete audioSource;
         audioSource = nullptr;
+        audioInputDevice = nullptr; // 必须将指针置空，防止后续误用
     }
+    qInfo() << "音频输入已清理。";
+
+    // 2. 停止并清理音频输出（扬声器）
     if (audioSink) {
         audioSink->stop();
+        // 等待一小段时间确保设备完全停止
+        QThread::msleep(50);
         delete audioSink;
         audioSink = nullptr;
+        audioOutputDevice = nullptr; // 将指针置空
     }
-    audioInputDevice = nullptr;
-    audioOutputDevice = nullptr;
+    qInfo() << "音频输出已清理。";
 
     // 2. 清理通话状态信息
     currentCallPeerPort = 0;
@@ -709,9 +801,75 @@ void ChatWindow::stopAudio()
     qInfo() << "所有通话资源已清理。";
 }
 
+// //======================
+//     // 2. 修改 startAudio 函数
+//     void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice &outDevice)
+// {
+//     qInfo() << "正在启动音频流...";
+
+//     // 不要再 new QAudioSource/Sink！直接使用已有的成员变量。
+
+//     // 启动音频输出 (扬声器)
+//     audioOutputDevice = audioSink->start();
+
+//     // 启动音频输入 (麦克风)
+//     audioInputDevice = audioSource->start();
+
+//     // 连接麦克风的 readyRead 信号
+//     connect(audioInputDevice, &QIODevice::readyRead, this, &ChatWindow::onAudioInputReady);
+
+//     qInfo() << "音频流已启动。";
+// }
+
+// // 3. 修改 stopAudio 函数
+// void ChatWindow::stopAudio()
+// {
+//     qInfo() << "正在执行最终清理 (stopAudio)...";
+
+//     // 1. 停止音频流，但不要 delete 对象
+//     if (audioSource && audioSource->state() != QAudio::StoppedState) {
+//         // 必须在这里断开连接！
+//         disconnect(audioInputDevice, &QIODevice::readyRead, this, &ChatWindow::onAudioInputReady);
+//         audioSource->stop();
+//     }
+//     if (audioSink && audioSink->state() != QAudio::StoppedState) {
+//         audioSink->stop();
+//     }
+
+//     // 将IO设备指针置空
+//     audioInputDevice = nullptr;
+//     audioOutputDevice = nullptr;
+//     qInfo() << "音频流已停止。";
+
+//     // 2. 清理通话状态信息 (这部分逻辑保持不变)
+//     currentCallPeerPort = 0;
+//     currentCallPeerAddress.clear();
+//     currentCallPeerName.clear();
+
+//     // 3. 确保UI指针被置空 (这部分逻辑保持不变)
+//     if (callWin) {
+//         callWin = nullptr;
+//     }
+//     qInfo() << "所有通话状态已清理。";
+// }
+
+// //===============================
+
 void ChatWindow::onUdpSocketReadyRead()
 {
-    if (!audioOutputDevice) {// 如果 audioOutputDevice 是 nullptr，说明通话还没开始或已经结束
+    // if (!audioOutputDevice) {// 如果 audioOutputDevice 是 nullptr，说明通话还没开始或已经结束
+    //     qDebug() << "audioOutputDevice 为 nullptr，无法播放音频";
+    //     return;
+    // }
+
+    // 如果 audioOutputDevice 是 nullptr，说明通话还没开始或已经结束
+    if (!audioOutputDevice) {
+        qDebug() << "audioOutputDevice 为 nullptr，无法播放音频";
+        // 在快速连续通话时，可能会收到上一次通话残留的UDP包，此时应该忽略
+        // 为了避免这种情况，我们读取并丢弃所有待处理的数据包
+        while(udpSocket->hasPendingDatagrams()){
+            udpSocket->receiveDatagram();
+        }
         return;
     }
 
@@ -722,6 +880,10 @@ void ChatWindow::onUdpSocketReadyRead()
         const QByteArray &audioData = networkDatagram.data();
         // 直接用 write() 函数写入到 audioOutputDevice (扬声器设备) 中。
         // Qt 会自动处理剩下的所有事情，将声音通过扬声器播放出来。
+        qDebug() << "收到音频数据，大小:" << audioData.size()
+                 << "从:" << networkDatagram.senderAddress().toString()
+                 << ":" << networkDatagram.senderPort();
+
         if (!audioData.isEmpty()) {
             audioOutputDevice->write(audioData);
         }
@@ -754,10 +916,15 @@ void ChatWindow::onAudioInputReady()
     // 解释：audioInputDevice->readAll() 从麦克风的缓冲区读取所有可用的新音频数据。
     // 返回的是一个 QByteArray，里面是原始的PCM音频数据。
     QByteArray audioData = audioInputDevice->readAll();
+    qDebug() << "发送音频数据，大小:" << audioData.size()
+             << "到:" << currentCallPeerAddress.toString() << ":" << currentCallPeerPort;
 
+    if (!audioData.isEmpty()) {
+        udpSocket->writeDatagram(audioData, currentCallPeerAddress, currentCallPeerPort);
+    }
     // 解释：我们使用之前已经验证过的 udpSocket->writeDatagram() 函数，
     // 将刚刚从麦克风读取到的音频数据，直接发送到对方的UDP地址和端口。
-    udpSocket->writeDatagram(audioData,currentCallPeerAddress,currentCallPeerPort);
+    //udpSocket->writeDatagram(audioData,currentCallPeerAddress,currentCallPeerPort);
 
 }
 
