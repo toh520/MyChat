@@ -27,7 +27,6 @@ public:
     QLineEdit *messageLineEdit;
     QTabWidget *chatTabWidget;
     QPushButton *callButton;
-    QPushButton *hangupButton;
 
     void setupUi(QWidget *ChatWindow)
     {
@@ -49,9 +48,6 @@ public:
         callButton = new QPushButton(ChatWindow);
         callButton->setObjectName("callButton");
         callButton->setGeometry(QRect(320, 20, 56, 18));
-        hangupButton = new QPushButton(ChatWindow);
-        hangupButton->setObjectName("hangupButton");
-        hangupButton->setGeometry(QRect(320, 60, 56, 18));
 
         retranslateUi(ChatWindow);
 
@@ -66,7 +62,6 @@ public:
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "Form", nullptr));
         sendButton->setText(QCoreApplication::translate("ChatWindow", "\345\217\221\351\200\201", nullptr));
         callButton->setText(QCoreApplication::translate("ChatWindow", "\350\257\255\351\237\263\351\200\232\350\257\235", nullptr));
-        hangupButton->setText(QCoreApplication::translate("ChatWindow", "\346\214\202\346\226\255", nullptr));
     } // retranslateUi
 
 };

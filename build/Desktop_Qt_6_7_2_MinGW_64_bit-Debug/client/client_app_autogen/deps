@@ -1,6 +1,8 @@
 client_app_autogen/timestamp: \
 	D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h \
 	D:/code/qt/Mychat/client/CMakeLists.txt \
+	D:/code/qt/Mychat/client/callwindow.cpp \
+	D:/code/qt/Mychat/client/callwindow.h \
 	D:/code/qt/Mychat/client/chatwindow.cpp \
 	D:/code/qt/Mychat/client/chatwindow.h \
 	D:/code/qt/Mychat/client/main.cpp \
@@ -621,6 +623,7 @@ client_app_autogen/timestamp: \
 	D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/time.h \
 	D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/vadefs.h \
 	D:/newQT/Tools/mingw1120_64/x86_64-w64-mingw32/include/wchar.h \
+	D:/code/qt/Mychat/client/callwindow.ui \
 	D:/code/qt/Mychat/client/chatwindow.ui \
 	D:/code/qt/Mychat/client/mainwindow.ui \
 	D:/newQT/Tools/CMake_64/bin/cmake.exe

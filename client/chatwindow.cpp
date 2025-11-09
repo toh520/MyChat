@@ -1,4 +1,6 @@
 #include "chatwindow.h"
+#include "callwindow.h"
+
 #include "ui_chatwindow.h"
 #include <QDebug>
 #include <QJsonArray>
@@ -35,6 +37,7 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     this->socket->disconnect();
     // 2. 将socket的父对象设置为当前窗口，确保内存被正确管理。
     this->socket->setParent(this);
+
 
 
 
@@ -88,18 +91,61 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
         qWarning() << "UDP Socket 绑定失败!";
     }
 
-
+    //通话窗口
+    // callWin = new callWindow();
+    // callWin->hide(); // 默认是隐藏的
 
     //信号与槽
     connect(socket,&QTcpSocket::readyRead,this,&ChatWindow::onSocketReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &ChatWindow::onSocketDisconnected);// 我们也需要处理断开连接的情况，以防服务器中途关闭
     connect(udpSocket,&QUdpSocket::readyRead,this,&ChatWindow::onUdpSocketReadyRead);
+    // connect(callWin,&callWindow::accepted,this,[=](){
+    //     qDebug() << "用户点击了接听，向" << currentCallPeerName << "发送 accept_call 信令";
 
+    //     // 发送 accept_call 信令
+    //     QJsonObject acceptMsg;
+    //     acceptMsg["type"] = "accept_call";
+    //     acceptMsg["recipient"] = currentCallPeerName;
+    //     sendMessage(acceptMsg);
+
+    //     // 启动自己的音频
+    //     startAudio(QMediaDevices::defaultAudioInput(), QMediaDevices::defaultAudioOutput());
+
+    //     // 将通话窗口切换到“通话中”状态
+    //     callWin->showInCall(currentCallPeerName);
+
+    // });// 当用户点击接听时
+    // connect(callWin, &callWindow::rejected, this,[this]{
+    //     qDebug() << "用户点击了拒绝，向" << currentCallPeerName << "发送 reject_call 信令";
+
+    //     QJsonObject rejectMsg;
+    //     rejectMsg["type"] = "reject_call";
+    //     rejectMsg["recipient"] = currentCallPeerName;
+    //     sendMessage(rejectMsg);
+
+    // });// 当用户点击拒绝时
+    // connect(callWin,&callWindow::hangedUp,this,[this]{
+    //     qDebug() << "用户点击了挂断，向" << currentCallPeerName << "发送 hangup_call 信令";
+
+    //     // 发送 hangup_call 信令
+    //     QJsonObject hangupMsg;
+    //     hangupMsg["type"] = "hangup_call";
+    //     hangupMsg["recipient"] = currentCallPeerName;
+    //     sendMessage(hangupMsg);
+
+    //     // 立刻停止本地音频
+    //     stopAudio();
+    // });// 当用户在通话中点击挂断时
 }
 
 ChatWindow::~ChatWindow()
 {
+    // // 如果窗口关闭时通话仍在进行, 确保清理
+    // if (callWin) {
+    //     callWin->close();
+    // }
     delete ui;
+    //delete callWin;
 }
 
 void ChatWindow::on_sendButton_clicked()
@@ -266,10 +312,12 @@ void ChatWindow::onSocketReadyRead()
                         browser->append("<hr><em><p align='center' style='color:gray;'>--- 以上是历史消息 ---</p></em>");
                     }
                 }
-            }else if(type == "call_response" || type == "call_offer"){//通话模块
+            }/*else if(type == "call_response"||type == "call_offer"){//通话模块
                 QString peerName = jsonObj["peer_name"].toString();
                 QString peerIp = jsonObj["peer_ip"].toString();
                 quint16 peerPort = static_cast<quint16>(jsonObj["peer_port"].toInt());
+
+                switchToOrOpenPrivateChat(peerName);
 
                 currentCallPeerAddress.setAddress(peerIp);
                 currentCallPeerPort = peerPort;
@@ -295,13 +343,118 @@ void ChatWindow::onSocketReadyRead()
                     qDebug() << "收到来自" << peerName << "的来电！对方UDP地址:" << peerIp << ":" << peerPort;
 
                 }
-            }else if(type == "hangup_call"){
+            }*//*else if(type == "call_response"){//处理“呼叫成功”的响应（我是呼叫方）
+                if (callWin) return; // 如果已经有通话窗口, 忽略, 防止重复创建
+
+                QString peerName = jsonObj["peer_name"].toString();
+                QString peerIp = jsonObj["peer_ip"].toString();
+                quint16 peerPort = static_cast<quint16>(jsonObj["peer_port"].toInt());
+
+                qDebug() << "通话请求成功！获取到对方" << peerName << "的UDP地址:" << peerIp << ":" << peerPort;
+                currentCallPeerName = peerName;//记录下来电者
+
+                // 启动音频设备
+                currentCallPeerAddress.setAddress(peerIp);
+                currentCallPeerPort = peerPort;
+                startAudio(QMediaDevices::defaultAudioInput(), QMediaDevices::defaultAudioOutput());
+
+                // *** 动态创建 callWindow ***
+                callWin = new callWindow();
+                callWin->setAttribute(Qt::WA_DeleteOnClose); // 窗口关闭时自动删除
+                connect(callWin, &callWindow::hangedUp, this, &ChatWindow::onHangupClicked);
+                connect(callWin, &QObject::destroyed, this, [this](){ callWin = nullptr; }); // <--- 安全措施
+
+                // 弹出“通话中”窗口
+                callWin->showInCall(peerName);
+            }else if(type == "call_offer"){//处理“收到来电”的请求（我是接收方）
+                if (callWin) return; // 如果正在通话中, 忽略新的来电
+
+                QString peerName = jsonObj["peer_name"].toString();
+                QString peerIp = jsonObj["peer_ip"].toString();
+                quint16 peerPort = static_cast<quint16>(jsonObj["peer_port"].toInt());
+
+                qDebug() << "收到来自" << peerName << "的来电！";
+
+                // 确保第一时间记录来电者
+                currentCallPeerName = peerName;
+
+                // 暂存对方信息，等待用户接听
+                currentCallPeerAddress.setAddress(peerIp);
+                currentCallPeerPort = peerPort;
+
+                callWin = new callWindow();
+                callWin->setAttribute(Qt::WA_DeleteOnClose); // 窗口关闭时自动删除
+
+                connect(callWin, &callWindow::accepted, this, &ChatWindow::onAcceptClicked);
+                connect(callWin, &callWindow::rejected, this, &ChatWindow::onRejectClicked);
+                connect(callWin, &QObject::destroyed, this, [this](){ callWin = nullptr; }); // <--- 安全措施
+                callWin->showIncomingCall(peerName);
+                // 弹出“来电”窗口让用户选择，而不是直接启动音频
+                callWin->showIncomingCall(peerName);
+            }else if(type == "hangup_call"){//处理“对方挂断”的通知
                 qDebug() << "收到对方的挂断通知。";
 
                 // 对方挂断了电话，我们也需要停止音频并更新UI
                 stopAudio();
-                ui->hangupButton->setVisible(false);
-                ui->callButton->setVisible(true);
+
+
+                //callWin->closeAndReset();
+                // ui->hangupButton->setVisible(false);
+                // ui->callButton->setVisible(true);
+            }else if (type == "accept_call") {//对方接听了我们的电话
+                if (callWin) {
+                    // 此时我的 callWin 应该已经是 "通话中" 界面, 无需操作
+                    qDebug() << currentCallPeerName << " 已接听，通话正式开始。";
+
+                // 我们作为呼叫方，此时也应该启动音频
+                //startAudio(QMediaDevices::defaultAudioInput(), QMediaDevices::defaultAudioOutput());
+
+                // 并显示通话中窗口
+                //callWin->showInCall(peerName);
+                }
+            }else if (type == "reject_call") {
+                QString peerName = jsonObj["sender"].toString();
+                qDebug() << peerName << " 拒绝了您的通话请求。";
+
+                // 这里可以弹出一个提示，但为了简单，我们先只在控制台输出
+                // 然后重置呼叫状态
+                currentCallPeerName.clear();
+                currentCallPeerAddress.clear();
+                currentCallPeerPort = 0;
+
+                stopAudio(); // 我方作为呼叫方，被拒绝后，停止呼叫过程
+            }*/
+            else if (type == "call_response" || type == "call_offer") {
+                if (callWin) return; // 正在通话中，忽略新的请求
+
+                QString peerName = jsonObj["peer_name"].toString();
+                // ... 获取 ip/port ...
+                currentCallPeerName = peerName;
+                currentCallPeerAddress.setAddress(jsonObj["peer_ip"].toString());
+                currentCallPeerPort = static_cast<quint16>(jsonObj["peer_port"].toInt());
+
+                // 1. 创建窗口
+                callWin = new callWindow();
+                callWin->setAttribute(Qt::WA_DeleteOnClose);
+
+                // 2. 连接信号
+                // *** 这是最关键的连接：当窗口被销毁时，自动清理一切 ***
+                connect(callWin, &QObject::destroyed, this, &ChatWindow::stopAudio);
+
+                if (type == "call_response") { // 我是呼叫方
+                    connect(callWin, &callWindow::hangedUp, this, &ChatWindow::onHangupClicked);
+                    startAudio(QMediaDevices::defaultAudioInput(), QMediaDevices::defaultAudioOutput());
+                    callWin->showInCall(peerName);
+                } else { // 我是被叫方 ("call_offer")
+                    connect(callWin, &callWindow::accepted, this, &ChatWindow::onAcceptClicked);
+                    connect(callWin, &callWindow::rejected, this, &ChatWindow::onRejectClicked);
+                    callWin->showIncomingCall(peerName);
+                }
+            } else if (type == "reject_call" || type == "hangup_call") {
+                qDebug() << "收到对方的 " << type << " 通知，关闭通话窗口。";
+                if (callWin) {
+                    callWin->close(); // close() 将会触发 destroyed 信号，进而调用 stopAudio
+                }
             }else{
 
             }
@@ -309,8 +462,8 @@ void ChatWindow::onSocketReadyRead()
 
         // 5. 一条消息处理完毕，重置incompleteMessageSize，准备处理下一条
         incompleteMessageSize = 0;
-    }
 
+    }
 
     // QByteArray data = socket->readAll();
     // QJsonParseError parseError;
@@ -342,7 +495,6 @@ void ChatWindow::onSocketReadyRead()
 
     // }
 }
-
 void ChatWindow::onSocketDisconnected()
 {
     qWarning() << "与服务器的连接已断开，聊天窗口将关闭。";
@@ -369,37 +521,7 @@ void ChatWindow::on_userListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
     QString clickedUser = item->text();
 
-    // 不能和自己聊天
-    if (clickedUser == myUsername) {
-        return; // 如果双击的是自己，则不做任何事
-    }
-
-    // 检查是否已经存在与该用户的私聊标签页
-    if(sessionBrowsers.contains(clickedUser)){
-        //存在即切换
-        for(int i=0;i<ui->chatTabWidget->count();i++){
-            if(ui->chatTabWidget->tabText(i)==clickedUser){
-                ui->chatTabWidget->setCurrentIndex(i);
-                return;
-            }
-        }
-    }else{
-        //不存在创建
-        QWidget *privateTab= new QWidget();
-        QTextBrowser *privateBrowser = new QTextBrowser();
-        QVBoxLayout *tabLayout = new QVBoxLayout(privateTab);
-        tabLayout->setContentsMargins(0,0,0,0);
-        tabLayout->addWidget(privateBrowser);
-
-        int newIndex= ui->chatTabWidget->addTab(privateTab,clickedUser);
-        sessionBrowsers.insert(clickedUser,privateBrowser);
-
-        // 当我们第一次创建私聊窗口时，请求这个私聊的历史记录
-        requestHistoryForChannel(clickedUser);
-
-        //切换到该页
-        ui->chatTabWidget->setCurrentIndex(newIndex);
-    }
+    switchToOrOpenPrivateChat(clickedUser);
 
     // // 如果双击的是当前已经选中的用户，则取消私聊，回到群聊模式
     // if(clickedUser==currentPrivateChatUser){
@@ -445,11 +567,54 @@ void ChatWindow::sendMessage(const QJsonObject &message)
 
 }
 
+void ChatWindow::switchToOrOpenPrivateChat(const QString &username)
+{
+    if (username == myUsername || username == "世界频道" || username.isEmpty()) {
+        return;
+    }
+
+    if (sessionBrowsers.contains(username)) {
+        // 如果存在，就遍历所有标签页，找到它并切换过去
+        for (int i = 0; i < ui->chatTabWidget->count(); ++i) {
+            if (ui->chatTabWidget->tabText(i) == username) {
+                ui->chatTabWidget->setCurrentIndex(i);
+                return; // 切换完成，函数结束
+            }
+        }
+    } else{
+        qDebug() << "为新用户" << username << "创建私聊窗口。";
+        //创建UI组件
+        QWidget *privateTab = new QWidget();
+        QTextBrowser *privateBrowser = new QTextBrowser();
+        QVBoxLayout *tabLayout = new QVBoxLayout(privateTab);
+        tabLayout->setContentsMargins(0,0,0,0);
+        tabLayout->addWidget(privateBrowser);
+
+        // 将新标签页添加到TabWidget中
+        int newIndex = ui->chatTabWidget->addTab(privateTab, username);
+
+        sessionBrowsers.insert(username,privateBrowser);
+
+        requestHistoryForChannel(username);
+
+        // 自动切换到这个刚刚创建的新标签页
+        ui->chatTabWidget->setCurrentIndex(newIndex);
+    }
+
+}
+
 void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice &outDevice)
 {
+    // 增加保护，如果音频设备已存在，则先停止并清理
+    if (audioSource || audioSink) {
+        qWarning() << "startAudio 被调用，但音频设备已存在。将先停止现有设备。";
+        stopAudio();
+    }
+
     // --- 1. 初始化音频输出 (扬声器) ---
     // 解释：创建一个 QAudioSink 对象，告诉它我们要用哪个设备（outputDevice）
     // 和哪种音频格式（audioFormat，我们之前在构造函数里定义的）。
+    qInfo() << "正在初始化音频设备...";
     audioSink = new QAudioSink(outDevice,audioFormat,this);
     audioOutputDevice = audioSink->start();
     qInfo()<<"音频输出（扬声器）已启动。";
@@ -477,31 +642,71 @@ void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice 
 
 void ChatWindow::stopAudio()
 {
-    qInfo() << "正在停止音频设备...";
+    // qInfo() << "正在停止音频设备...";
 
-    // 停止并销毁 QAudioSource (麦克风)
-    if(audioSource){
+    // // 停止并销毁 QAudioSource (麦克风)
+    // if(audioSource){
+    //     // 在删除前先断开连接，这是更安全的做法
+    //     if (audioInputDevice) {
+    //         disconnect(audioInputDevice, &QIODevice::readyRead, this, &ChatWindow::onAudioInputReady);
+    //     }
+    //     audioSource->stop();
+    //     delete audioSource;
+    //     audioSource =  nullptr;
+    // }
+
+    // // 停止并销毁 QAudioSink (扬声器)
+    // if(audioSink){
+    //     audioSink->stop();
+    //     delete audioSink;
+    //     audioSink =  nullptr;
+    // }
+    // // audioInputDevice 和 audioOutputDevice 不需要手动 delete，
+    // // 因为它们是 audioSource 和 audioSink 的一部分，会在上面被一并销毁。
+    // audioInputDevice = nullptr;
+    // audioOutputDevice = nullptr;
+
+    // // 重置通话对端信息
+    // currentCallPeerPort = 0;
+    // currentCallPeerAddress.clear();
+    // currentCallPeerName.clear();
+
+    // // 3. 安全地关闭和销毁UI窗口
+    // if (callWin) {
+    //     // 断开所有与它的连接, 防止它在关闭过程中再次触发信号
+    //     disconnect(callWin, nullptr, this, nullptr);
+    //     callWin->close(); // 因为设置了WA_DeleteOnClose, close()就会触发销毁
+    //     callWin = nullptr; // 立即将指针置空
+    // }
+
+    // qInfo() << "音频设备已停止。";
+    qInfo() << "正在执行最终清理 (stopAudio)...";
+
+    // 1. 停止并清理音频设备
+    if (audioSource) {
         audioSource->stop();
         delete audioSource;
-        audioSource =  nullptr;
+        audioSource = nullptr;
     }
-
-    // 停止并销毁 QAudioSink (扬声器)
-    if(audioSink){
+    if (audioSink) {
         audioSink->stop();
         delete audioSink;
-        audioSink =  nullptr;
+        audioSink = nullptr;
     }
-    // audioInputDevice 和 audioOutputDevice 不需要手动 delete，
-    // 因为它们是 audioSource 和 audioSink 的一部分，会在上面被一并销毁。
     audioInputDevice = nullptr;
     audioOutputDevice = nullptr;
 
-    // 重置通话对端信息
+    // 2. 清理通话状态信息
     currentCallPeerPort = 0;
     currentCallPeerAddress.clear();
+    currentCallPeerName.clear();
 
-    qInfo() << "音频设备已停止。";
+    // 3. 确保指针被置空
+    // 此时 callWin 已经被销毁了，但为了绝对安全，我们检查并置空
+    if (callWin) {
+        callWin = nullptr;
+    }
+    qInfo() << "所有通话资源已清理。";
 }
 
 void ChatWindow::onUdpSocketReadyRead()
@@ -570,6 +775,8 @@ void ChatWindow::on_callButton_clicked()
         return;
     }
 
+    currentCallPeerName = recipientName; // 立刻记录呼叫对象
+
     QJsonObject callRequest;
     callRequest["type"] = "request_call";
     callRequest["recipient"] = recipientName;
@@ -578,31 +785,52 @@ void ChatWindow::on_callButton_clicked()
     qDebug() << "呼叫按钮被点击！";
 }
 
-
-void ChatWindow::on_hangupButton_clicked()
+void ChatWindow::onHangupClicked()
 {
-    qDebug() << "挂断按钮被点击！";
-
-    QJsonObject hangupMsg;
-    hangupMsg["type"] = "hangup_call";
-
-    // 注意：我们需要告诉服务器我们要挂断和谁的电话
-    //暂时先从ui获取，后续在增加其他判断方法，提高实用性（和一个人通话，一个人聊天分开）
-    int currentIndex = ui->chatTabWidget->currentIndex();
-    if (currentIndex != -1) {
-        QString peerName = ui->chatTabWidget->tabText(currentIndex);
-        if (peerName != "世界频道") {
-            hangupMsg["recipient"] = peerName;
-            sendMessage(hangupMsg);
-        }
+    qDebug() << "用户点击了挂断按钮。";
+    if (!currentCallPeerName.isEmpty()) {
+        QJsonObject hangupMsg;
+        hangupMsg["type"] = "hangup_call";
+        hangupMsg["recipient"] = currentCallPeerName;
+        sendMessage(hangupMsg);
     }
-
-    // 立刻停止本地的音频设备
-    stopAudio();
-
-    // 更新UI状态
-    ui->hangupButton->setVisible(false); // 隐藏挂断按钮
-    ui->callButton->setVisible(true);    // 显示呼叫按钮
-
+    // 不再直接调用 stopAudio(), 而是关闭窗口，让信号链来处理
+    if (callWin) {
+        callWin->close();
+    }
 }
 
+void ChatWindow::onAcceptClicked()
+{
+    qDebug() << "用户点击了接听按钮。";
+    if (!callWin || currentCallPeerName.isEmpty()) return;
+
+    // 1. 断开 "rejected" 信号，因为它不再需要
+    disconnect(callWin, &callWindow::rejected, this, &ChatWindow::onRejectClicked);
+    // 2. 连接 "hangedUp" 信号，因为现在可以挂断了
+    connect(callWin, &callWindow::hangedUp, this, &ChatWindow::onHangupClicked);
+
+    // ... (通知对方、启动音频、更新UI 的代码不变)
+    QJsonObject acceptMsg;
+    acceptMsg["type"] = "accept_call";
+    acceptMsg["recipient"] = currentCallPeerName;
+    sendMessage(acceptMsg);
+
+    startAudio(QMediaDevices::defaultAudioInput(), QMediaDevices::defaultAudioOutput());
+
+    callWin->showInCall(currentCallPeerName);
+}
+
+void ChatWindow::onRejectClicked()
+{
+    qDebug() << "用户点击了拒绝按钮。";
+    if (!currentCallPeerName.isEmpty()) {
+        QJsonObject rejectMsg;
+        rejectMsg["type"] = "reject_call";
+        rejectMsg["recipient"] = currentCallPeerName;
+        sendMessage(rejectMsg);
+    }
+    if (callWin) {
+        callWin->close();
+    }
+}

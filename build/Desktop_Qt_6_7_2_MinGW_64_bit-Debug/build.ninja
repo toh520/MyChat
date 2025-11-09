@@ -110,6 +110,14 @@ build client/CMakeFiles/client_app.dir/chatwindow.cpp.obj: CXX_COMPILER__client_
   OBJECT_DIR = client\CMakeFiles\client_app.dir
   OBJECT_FILE_DIR = client\CMakeFiles\client_app.dir
 
+build client/CMakeFiles/client_app.dir/callwindow.cpp.obj: CXX_COMPILER__client_app_unscanned_Debug D$:/code/qt/Mychat/client/callwindow.cpp || cmake_object_order_depends_target_client_app
+  DEFINES = -DMINGW_HAS_SECURE_API=1 -DQT_CORE_LIB -DQT_GUI_LIB -DQT_MULTIMEDIA_LIB -DQT_NETWORK_LIB -DQT_WIDGETS_LIB -DUNICODE -DWIN32 -DWIN64 -D_ENABLE_EXTENDED_ALIGNED_STORAGE -D_UNICODE -D_WIN64
+  DEP_FILE = client\CMakeFiles\client_app.dir\callwindow.cpp.obj.d
+  FLAGS = -DQT_QML_DEBUG -g -fdiagnostics-color=always
+  INCLUDES = -ID:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/include -isystem D:/newQT/6.7.2/mingw_64/include/QtWidgets -isystem D:/newQT/6.7.2/mingw_64/include -isystem D:/newQT/6.7.2/mingw_64/include/QtCore -isystem D:/newQT/6.7.2/mingw_64/mkspecs/win32-g++ -isystem D:/newQT/6.7.2/mingw_64/include/QtGui -isystem D:/newQT/6.7.2/mingw_64/include/QtNetwork -isystem D:/newQT/6.7.2/mingw_64/include/QtMultimedia
+  OBJECT_DIR = client\CMakeFiles\client_app.dir
+  OBJECT_FILE_DIR = client\CMakeFiles\client_app.dir
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target client_app
@@ -118,7 +126,7 @@ build client/CMakeFiles/client_app.dir/chatwindow.cpp.obj: CXX_COMPILER__client_
 #############################################
 # Link the executable client\client_app.exe
 
-build client/client_app.exe: CXX_EXECUTABLE_LINKER__client_app_Debug client/CMakeFiles/client_app.dir/client_app_autogen/mocs_compilation.cpp.obj client/CMakeFiles/client_app.dir/main.cpp.obj client/CMakeFiles/client_app.dir/mainwindow.cpp.obj client/CMakeFiles/client_app.dir/chatwindow.cpp.obj | D$:/newQT/6.7.2/mingw_64/lib/libQt6Widgets.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Multimedia.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Gui.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Network.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Core.a || client/client_app_autogen client/client_app_autogen_timestamp_deps
+build client/client_app.exe: CXX_EXECUTABLE_LINKER__client_app_Debug client/CMakeFiles/client_app.dir/client_app_autogen/mocs_compilation.cpp.obj client/CMakeFiles/client_app.dir/main.cpp.obj client/CMakeFiles/client_app.dir/mainwindow.cpp.obj client/CMakeFiles/client_app.dir/chatwindow.cpp.obj client/CMakeFiles/client_app.dir/callwindow.cpp.obj | D$:/newQT/6.7.2/mingw_64/lib/libQt6Widgets.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Multimedia.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Gui.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Network.a D$:/newQT/6.7.2/mingw_64/lib/libQt6Core.a || client/client_app_autogen client/client_app_autogen_timestamp_deps
   FLAGS = -DQT_QML_DEBUG -g
   LINK_LIBRARIES = D:/newQT/6.7.2/mingw_64/lib/libQt6Widgets.a  D:/newQT/6.7.2/mingw_64/lib/libQt6Multimedia.a  D:/newQT/6.7.2/mingw_64/lib/libQt6Gui.a  -ld3d11  -ldxgi  -ldxguid  -ld3d12  D:/newQT/6.7.2/mingw_64/lib/libQt6Network.a  D:/newQT/6.7.2/mingw_64/lib/libQt6Core.a  -lmpr  -luserenv  -lws2_32  -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = client\CMakeFiles\client_app.dir
@@ -162,7 +170,7 @@ build client/client_app_autogen_timestamp_deps: phony
 #############################################
 # Utility command for client_app_autogen
 
-build client/client_app_autogen: phony client/CMakeFiles/client_app_autogen client/client_app_autogen/include/ui_mainwindow.h client/client_app_autogen/include/ui_chatwindow.h client/client_app_autogen/timestamp client/client_app_autogen/mocs_compilation.cpp client/client_app_autogen_timestamp_deps
+build client/client_app_autogen: phony client/CMakeFiles/client_app_autogen client/client_app_autogen/include/ui_mainwindow.h client/client_app_autogen/include/ui_chatwindow.h client/client_app_autogen/include/ui_callwindow.h client/client_app_autogen/timestamp client/client_app_autogen/mocs_compilation.cpp client/client_app_autogen_timestamp_deps
 
 
 #############################################
@@ -179,7 +187,7 @@ build client/client_app_autogen/timestamp client/client_app_autogen/mocs_compila
 #############################################
 # Phony custom command for client\CMakeFiles\client_app_autogen
 
-build client/CMakeFiles/client_app_autogen client/client_app_autogen/include/ui_mainwindow.h client/client_app_autogen/include/ui_chatwindow.h | ${cmake_ninja_workdir}client/CMakeFiles/client_app_autogen ${cmake_ninja_workdir}client/client_app_autogen/include/ui_mainwindow.h ${cmake_ninja_workdir}client/client_app_autogen/include/ui_chatwindow.h: phony client/client_app_autogen/timestamp || client/client_app_autogen_timestamp_deps
+build client/CMakeFiles/client_app_autogen client/client_app_autogen/include/ui_mainwindow.h client/client_app_autogen/include/ui_chatwindow.h client/client_app_autogen/include/ui_callwindow.h | ${cmake_ninja_workdir}client/CMakeFiles/client_app_autogen ${cmake_ninja_workdir}client/client_app_autogen/include/ui_mainwindow.h ${cmake_ninja_workdir}client/client_app_autogen/include/ui_chatwindow.h ${cmake_ninja_workdir}client/client_app_autogen/include/ui_callwindow.h: phony client/client_app_autogen/timestamp || client/client_app_autogen_timestamp_deps
 
 # =============================================================================
 # Write statements declared in CMakeLists.txt:

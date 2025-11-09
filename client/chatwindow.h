@@ -23,6 +23,7 @@
 
 class QListWidgetItem;
 class QTextBrowser;
+class callWindow;
 
 namespace Ui {
 class ChatWindow;
@@ -48,7 +49,9 @@ private slots:
 
     void on_callButton_clicked();
 
-    void on_hangupButton_clicked();
+    void onHangupClicked();
+    void onAcceptClicked();
+    void onRejectClicked();
 
 private:
     Ui::ChatWindow *ui;
@@ -63,10 +66,14 @@ private:
     QHostAddress currentCallPeerAddress;
     quint16 currentCallPeerPort = 0;//是否为0来判断当前是否“在通话中”
 
+    callWindow *callWin = nullptr;
+    QString currentCallPeerName; // 存储当前通话对方的用户名
+
 
 private:
     void requestHistoryForChannel(const QString &channel);//用于请求指定频道的历史记录
     void sendMessage(const QJsonObject &message);//通用传输数据函数，解决socket》write的json粘包问题
+    void switchToOrOpenPrivateChat(const QString &username);//私聊窗口切换
 
 private://音频变量
     QAudioSource *audioSource = nullptr;

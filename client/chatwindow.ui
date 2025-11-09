@@ -72,19 +72,6 @@
     <string>语音通话</string>
    </property>
   </widget>
-  <widget class="QPushButton" name="hangupButton">
-   <property name="geometry">
-    <rect>
-     <x>320</x>
-     <y>60</y>
-     <width>56</width>
-     <height>18</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>挂断</string>
-   </property>
-  </widget>
  </widget>
  <resources/>
  <connections/>

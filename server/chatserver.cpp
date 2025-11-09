@@ -211,6 +211,11 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
             processCallRequest(clientSocket, json);
         }else if(type == "hangup_call"){
             processHangupCall(clientSocket, json);
+        }else if (type == "accept_call") {
+            processAcceptCall(clientSocket, json);
+        }
+        else if (type == "reject_call") {
+            processRejectCall(clientSocket, json);
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -518,6 +523,39 @@ void ChatServer::processHangupCall(QTcpSocket *clientSocket, const QJsonObject &
         // 我们可以包含挂断方的信息，但对于客户端来说，知道类型就够了
         hangupNotice["sender"] = senderName;
         sendMessage(recipientSocket,hangupNotice);
+    }
+}
+
+void ChatServer::processAcceptCall(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    QString senderName = socketUserMap.value(clientSocket);
+    QString recipientName = json["recipient"].toString();
+
+    qInfo() << senderName << "接受了来自" << recipientName << "的通话请求。";
+
+    QTcpSocket *recipientSocket = userSocketMap.value(recipientName);
+
+    if (recipientSocket) {
+        QJsonObject notice;
+        notice["type"] = "accept_call";
+        notice["sender"] = senderName;
+        sendMessage(recipientSocket, notice);
+    }
+}
+
+void ChatServer::processRejectCall(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    QString senderName = socketUserMap.value(clientSocket);
+    QString recipientName = json["recipient"].toString();
+
+    qInfo() << senderName << "拒绝了来自" << recipientName << "的通话请求。";
+
+    QTcpSocket *recipientSocket = userSocketMap.value(recipientName);
+    if (recipientSocket) {
+        QJsonObject notice;
+        notice["type"] = "reject_call";
+        notice["sender"] = senderName;
+        sendMessage(recipientSocket, notice);
     }
 }
 
