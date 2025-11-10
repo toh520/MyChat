@@ -27,6 +27,7 @@ public:
     QLineEdit *messageLineEdit;
     QTabWidget *chatTabWidget;
     QPushButton *callButton;
+    QPushButton *recordButton;
 
     void setupUi(QWidget *ChatWindow)
     {
@@ -38,7 +39,7 @@ public:
         userListWidget->setGeometry(QRect(10, 10, 121, 221));
         sendButton = new QPushButton(ChatWindow);
         sendButton->setObjectName("sendButton");
-        sendButton->setGeometry(QRect(260, 210, 51, 18));
+        sendButton->setGeometry(QRect(320, 210, 51, 18));
         messageLineEdit = new QLineEdit(ChatWindow);
         messageLineEdit->setObjectName("messageLineEdit");
         messageLineEdit->setGeometry(QRect(140, 210, 111, 19));
@@ -48,6 +49,9 @@ public:
         callButton = new QPushButton(ChatWindow);
         callButton->setObjectName("callButton");
         callButton->setGeometry(QRect(320, 20, 56, 18));
+        recordButton = new QPushButton(ChatWindow);
+        recordButton->setObjectName("recordButton");
+        recordButton->setGeometry(QRect(260, 210, 56, 18));
 
         retranslateUi(ChatWindow);
 
@@ -62,6 +66,7 @@ public:
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "Form", nullptr));
         sendButton->setText(QCoreApplication::translate("ChatWindow", "\345\217\221\351\200\201", nullptr));
         callButton->setText(QCoreApplication::translate("ChatWindow", "\350\257\255\351\237\263\351\200\232\350\257\235", nullptr));
+        recordButton->setText(QCoreApplication::translate("ChatWindow", "\346\214\211\344\275\217\345\275\225\351\237\263", nullptr));
     } // retranslateUi
 
 };

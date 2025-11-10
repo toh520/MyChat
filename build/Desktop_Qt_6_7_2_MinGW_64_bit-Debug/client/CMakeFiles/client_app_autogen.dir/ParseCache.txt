@@ -355,6 +355,7 @@ D:/code/qt/Mychat/client/chatwindow.h
  mmc:Q_OBJECT
  mdp:D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h
  mdp:D:/code/qt/Mychat/client/chatwindow.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QBuffer
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject
@@ -374,6 +375,7 @@ D:/code/qt/Mychat/client/chatwindow.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qatomic_cxx11.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbasicatomic.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbindingstorage.h
+ mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbuffer.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearray.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayalgorithms.h
  mdp:D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearraylist.h

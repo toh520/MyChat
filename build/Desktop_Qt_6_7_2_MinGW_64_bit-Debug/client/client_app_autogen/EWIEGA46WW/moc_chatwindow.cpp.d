@@ -1,5 +1,6 @@
 D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/EWIEGA46WW/moc_chatwindow.cpp: D:/code/qt/Mychat/client/chatwindow.h \
   D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_autogen/moc_predefs.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/QBuffer \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
   D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonObject \
@@ -19,6 +20,7 @@ D:/code/qt/Mychat/build/Desktop_Qt_6_7_2_MinGW_64_bit-Debug/client/client_app_au
   D:/newQT/6.7.2/mingw_64/include/QtCore/qatomic_cxx11.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbasicatomic.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbindingstorage.h \
+  D:/newQT/6.7.2/mingw_64/include/QtCore/qbuffer.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearray.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayalgorithms.h \
   D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearraylist.h \

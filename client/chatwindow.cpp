@@ -54,6 +54,7 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     //将私聊与群聊页面分开，创建群聊
     QWidget *worldChannelTab = new QWidget();
     QTextBrowser *worldChannelBrowser = new QTextBrowser();
+    worldChannelBrowser->setOpenLinks(false); // <<< 【解决清屏问题】
     //布局管理器
     QVBoxLayout *tabLayout = new QVBoxLayout(worldChannelTab);
     tabLayout->setContentsMargins(0,0,0,0);// 让布局紧贴房间边缘，不留白
@@ -61,6 +62,7 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
 
     //加入界面中
     ui->chatTabWidget->addTab(worldChannelTab,"世界频道");
+    connect(worldChannelBrowser, &QTextBrowser::anchorClicked, this, &ChatWindow::onVoiceMessageClicked);
 
     sessionBrowsers.insert("world_channel",worldChannelBrowser);
 
@@ -101,6 +103,11 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
     connect(socket,&QTcpSocket::readyRead,this,&ChatWindow::onSocketReadyRead);
     connect(socket, &QTcpSocket::disconnected, this, &ChatWindow::onSocketDisconnected);// 我们也需要处理断开连接的情况，以防服务器中途关闭
     connect(udpSocket,&QUdpSocket::readyRead,this,&ChatWindow::onUdpSocketReadyRead);
+
+    //录音
+    isPlayingVoiceMessage=false;
+
+
     // connect(callWin,&callWindow::accepted,this,[=](){
     //     qDebug() << "用户点击了接听，向" << currentCallPeerName << "发送 accept_call 信令";
 
@@ -470,6 +477,39 @@ void ChatWindow::onSocketReadyRead()
                 if (callWin) {
                     callWin->close(); // close() 将会触发 destroyed 信号，进而调用 stopAudio
                 }
+            }else if (type == "new_voice_message"){
+                QString sender = jsonObj["sender"].toString();
+                int duration_ms = jsonObj["duration_ms"].toInt();
+                QString base64_data = jsonObj["data"].toString();
+                QString channel = jsonObj["channel"].toString();
+                // 1. Base64 解码
+                QByteArray voiceData = QByteArray::fromBase64(base64_data.toUtf8());
+                // 2. 生成一个唯一的消息 ID
+                QString messageId = "voice_" + QString::number(QDateTime::currentMSecsSinceEpoch());
+                // 3. 存储解码后的音频数据
+                receivedVoiceMessages.insert(messageId, voiceData);
+                // 4. 在 UI 上显示可点击的链接
+                QString browserKey;
+                QString displayText;
+
+                if (channel == "世界频道") {
+                    browserKey = "world_channel"; // 使用内部key
+                    displayText = QString("[世界] 来自 %1: ").arg(sender);
+                } else {
+                    // 如果是私聊，channel 就是私聊对象的名称。
+                    // 但对于接收方来说，这条消息应该显示在与`sender`的聊天窗口里。
+                    browserKey = sender;
+                    displayText = QString("来自 %1: ").arg(sender);
+                }
+
+                QTextBrowser *browser = sessionBrowsers.value(browserKey);
+                if(browser){
+                    QString timeStr = QString::number(duration_ms / 1000.0, 'f', 1);
+                    // 使用 <a> 标签创建一个链接，href 属性就是我们的唯一 ID
+                    QString voiceHtml = QString("<a href=\"%1\" style=\"text-decoration:none; color:blue;\">[点击播放 %2s 语音]</a>").arg(messageId).arg(timeStr);
+                    browser->append(displayText + voiceHtml);
+                }
+
             }else{
 
             }
@@ -601,12 +641,17 @@ void ChatWindow::switchToOrOpenPrivateChat(const QString &username)
         //创建UI组件
         QWidget *privateTab = new QWidget();
         QTextBrowser *privateBrowser = new QTextBrowser();
+
+        privateBrowser->setOpenLinks(false); // <<< 【解决清屏问题】
+
         QVBoxLayout *tabLayout = new QVBoxLayout(privateTab);
         tabLayout->setContentsMargins(0,0,0,0);
         tabLayout->addWidget(privateBrowser);
 
         // 将新标签页添加到TabWidget中
         int newIndex = ui->chatTabWidget->addTab(privateTab, username);
+
+        connect(privateBrowser, &QTextBrowser::anchorClicked, this, &ChatWindow::onVoiceMessageClicked);
 
         sessionBrowsers.insert(username,privateBrowser);
 
@@ -1001,3 +1046,183 @@ void ChatWindow::onRejectClicked()
         callWin->close();
     }
 }
+
+void ChatWindow::on_recordButton_pressed()
+{
+    qDebug() << "开始录制语音消息...";
+    ui->recordButton->setText("松开发送");
+
+    const QAudioDevice &inputDevice = QMediaDevices::defaultAudioInput();
+    if (inputDevice.isNull()) {
+        qWarning() << "没有找到可用的录音设备!";
+        return;
+    }
+
+    //创建一个新的 QAudioSource 实例，专门用于这次录音
+    voiceAudioSource = new QAudioSource(inputDevice,audioFormat,this);
+
+    //    打开 QBuffer，准备接收数据
+    //    QIODevice::WriteOnly | QIODevice::Truncate 表示以只写方式打开，并清空之前的所有内容
+
+    voiceDataBuffer.open(QBuffer::WriteOnly | QBuffer::Truncate);
+
+    voiceInputDevice = voiceAudioSource->start();
+
+    if (!voiceInputDevice) {
+        qWarning() << "启动录音设备失败!";
+        // 清理资源
+        voiceDataBuffer.close();
+        delete voiceAudioSource;
+        voiceAudioSource = nullptr;
+        return;
+    }
+
+    //将 QAudioSource 的 readyRead 信号连接到我们的数据捕获槽函数
+    connect(voiceInputDevice,&QIODevice::readyRead,this,&ChatWindow::captureAudioData);
+
+    qDebug() << "录音设备已启动。";
+}
+
+
+void ChatWindow::on_recordButton_released()
+{
+    qDebug() << "录制结束。";
+    ui->recordButton->setText("按住录音");
+
+    // 如果 voiceAudioSource 存在，则停止录音
+    if (voiceAudioSource) {
+        voiceAudioSource->stop();
+    }
+
+    // 断开 voiceInputDevice 的信号连接
+    if (voiceInputDevice) {
+        disconnect(voiceInputDevice, &QIODevice::readyRead, this, &ChatWindow::captureAudioData);
+    }
+
+    // 安全地删除 QAudioSource 对象，并将指针置空
+    // voiceInputDevice 是 voiceAudioSource 的一部分，不需要我们手动删除，它会随着父对象被销毁
+    if (voiceAudioSource) {
+        voiceAudioSource->deleteLater();
+        voiceAudioSource = nullptr;
+        voiceInputDevice = nullptr; // 将设备指针也置空
+    }
+
+    //  关闭缓冲区
+    voiceDataBuffer.close();
+
+    //检查我们是否录到了东西
+    const QByteArray& recordedData = voiceDataBuffer.data();
+    if (recordedData.isEmpty()) {
+        qWarning() << "录音数据为空，不发送。";
+        return;
+    }
+
+    qDebug() << "总共录制了 " << recordedData.size() << " 字节。准备发送...";
+
+    // 计算录音时长 (毫秒)
+    // 公式: 时长 = (总字节数 * 1000) / (采样率 * 声道数 * (采样位深 / 8)==2)
+    int duration_ms = (recordedData.size()*1000)/ (audioFormat.sampleRate() * audioFormat.channelCount() * 2);
+
+    qDebug() << "总共录制了 " << recordedData.size() << " 字节，时长约 " << duration_ms << " 毫秒。准备发送...";
+
+    int currentIndex = ui->chatTabWidget->currentIndex();
+    if (currentIndex == -1) {
+        qWarning() << "没有选择聊天窗口，无法发送语音。";
+        return;
+    }
+    QString recipient = ui->chatTabWidget->tabText(currentIndex);
+
+
+    // 构建 JSON 对象
+    QJsonObject voiceMessageObject;
+    voiceMessageObject["type"] = "voice_message";
+    voiceMessageObject["recipient"] = recipient;
+    voiceMessageObject["duration_ms"] = duration_ms;
+    voiceMessageObject["format"] = "s16le"; // 我们硬编码这个格式
+    voiceMessageObject["data"] = QString(recordedData.toBase64()); // 转为 Base64 字符串
+
+    sendMessage(voiceMessageObject);
+
+    QString browserKey = recipient; // 默认key就是recipient的名字
+    if (recipient == "世界频道") {
+        browserKey = "world_channel"; // 如果是世界频道，则使用内部key
+    }
+
+    // 5. 在自己的聊天窗口显示一个提示
+    QTextBrowser *currentBrowser = sessionBrowsers.value(browserKey);
+    if(currentBrowser){
+        QString timeStr = QString::number(duration_ms / 1000.0, 'f', 1); // 格式化为秒，保留一位小数
+        currentBrowser->append(QString("<font color='green'>[我]:</font> [发送了一条 %1s 的语音]").arg(timeStr));
+    }
+
+
+}
+
+void ChatWindow::captureAudioData()
+{
+    if (!voiceInputDevice) return;
+
+    // 从 QAudioSource 读取所有可用的音频数据，并写入到我们的内存缓冲区中
+    const QByteArray& data = voiceInputDevice->readAll();
+    voiceDataBuffer.write(data);
+
+    qDebug() << "捕获到 " << data.size() << " 字节的音频数据";
+
+}
+
+void ChatWindow::onVoiceMessageClicked(const QUrl &url)
+{
+
+    // 如果当前正在播放另一条语音，则忽略本次点击
+    if (isPlayingVoiceMessage) {
+        qDebug() << "正在播放其他语音，请稍后点击。";
+        return;
+    }
+
+    QString messageId = url.toString();
+    qDebug() << "语音消息被点击，ID:" << messageId;
+
+    // 1. 检查我们是否存了这个ID的音频数据
+    if (!receivedVoiceMessages.contains(messageId)) {
+        qWarning() << "未找到 ID 为" << messageId << "的语音数据。";
+        return;
+    }
+
+    // 2. 获取音频数据
+    QByteArray voiceData = receivedVoiceMessages.value(messageId);
+
+    // 让 buffer 拥有数据的所有权，而不是仅仅引用。
+    QBuffer *buffer = new QBuffer();
+    buffer->setData(voiceData);
+    buffer->open(QIODevice::ReadOnly);
+
+    isPlayingVoiceMessage = true; // 上锁
+
+    // 1. 创建一个局部的、临时的 QAudioSink 对象。
+    //    注意：这里没有指定父对象(this)，因为它将由自己管理生命周期。
+    QAudioSink *tempAudioSink = new QAudioSink(QMediaDevices::defaultAudioOutput(), audioFormat);
+
+    // 2. 连接 stateChanged 信号，这是实现自动销毁的关键！
+    //    当播放状态从 Active/Suspended 变为 Idle (播放完毕) 或 Stopped 时，
+    //    这个 lambda 表达式就会被调用。
+    connect(tempAudioSink, &QAudioSink::stateChanged, this, [this,tempAudioSink](QAudio::State state) {
+        if (state == QAudio::IdleState || state == QAudio::StoppedState) {
+            qDebug() << "临时 AudioSink 播放完毕，状态：" << state << "，自动删除。";
+
+            // 安全地删除自己。deleteLater() 会将删除操作排入事件队列，
+            // 确保在槽函数执行完毕后才进行删除，非常安全。
+            tempAudioSink->deleteLater();
+
+            // 解锁
+            this->isPlayingVoiceMessage = false;
+        }
+    });
+
+    // QAudioSink::start() 返回一个 QIODevice，我们可以用它来直接播放一个现成的设备
+    // 这里我们直接调用 start(buffer)，让它从头到尾播放 buffer 里的所有数据。
+    // buffer 会在播放完成后被 QAudioSink 自动删除，非常方便。
+
+    tempAudioSink->start(buffer);
+    qDebug() << "正在播放语音消息(使用临时的 AudioSink 播放)";
+}
+

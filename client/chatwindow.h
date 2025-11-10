@@ -21,6 +21,9 @@
 #include <QMediaDevices>
 #include <QNetworkDatagram>//接收音频数据
 
+#include <QBuffer>//用于在内存中读写数据
+
+
 class QListWidgetItem;
 class QTextBrowser;
 class callWindow;
@@ -52,6 +55,16 @@ private slots:
     void onHangupClicked();
     void onAcceptClicked();
     void onRejectClicked();
+
+    //录音功能
+
+    void on_recordButton_pressed();// 按下录音按钮
+
+    void on_recordButton_released();// 松开录音按钮
+
+    void captureAudioData();// 从麦克风捕获数据
+
+    void onVoiceMessageClicked(const QUrl &url); // 用于处理语音消息点击事件
 
 private:
     Ui::ChatWindow *ui;
@@ -85,6 +98,16 @@ private://音频变量
     QIODevice *audioInputDevice = nullptr;  // 用于从麦克风读取数据
     QIODevice *audioOutputDevice = nullptr; // 用于向扬声器写入数据
     QAudioFormat audioFormat;               // 用来存储我们定义的音频格式
+
+    //录音
+    QAudioSource *voiceAudioSource = nullptr;//用于录制语音消息的独立 QAudioSource
+    QIODevice *voiceInputDevice = nullptr;    // [新增] 用于从麦克风读取语音消息数据的设备
+    QBuffer voiceDataBuffer;// 用于暂存录音数据的内存缓冲区
+    // 新增一个 Map, 用于存储收到的语音数据
+    // 键是唯一的消息ID (例如时间戳), 值是解码后的音频 QByteArray
+    QMap<QString, QByteArray> receivedVoiceMessages;
+    bool isPlayingVoiceMessage = false;//判断是否在播放
+
 
 private://音频函数
     void startAudio(const QAudioDevice &inputDevice,const QAudioDevice &outDevice);//负责初始化并启动 QAudioSource (麦克风) 和 QAudioSink (扬声器)。

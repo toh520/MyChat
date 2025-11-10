@@ -8,6 +8,7 @@ client_app_autogen/timestamp: \
 	D:/code/qt/Mychat/client/main.cpp \
 	D:/code/qt/Mychat/client/mainwindow.cpp \
 	D:/code/qt/Mychat/client/mainwindow.h \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/QBuffer \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QDataStream \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonArray \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/QJsonDocument \
@@ -33,6 +34,7 @@ client_app_autogen/timestamp: \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qatomic_cxx11.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qbasicatomic.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qbindingstorage.h \
+	D:/newQT/6.7.2/mingw_64/include/QtCore/qbuffer.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearray.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearrayalgorithms.h \
 	D:/newQT/6.7.2/mingw_64/include/QtCore/qbytearraylist.h \

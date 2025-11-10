@@ -216,6 +216,8 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
         }
         else if (type == "reject_call") {
             processRejectCall(clientSocket, json);
+        }else if(type == "voice_message"){
+            processVoiceMessage(clientSocket,json);
         }else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
@@ -557,6 +559,44 @@ void ChatServer::processRejectCall(QTcpSocket *clientSocket, const QJsonObject &
         notice["sender"] = senderName;
         sendMessage(recipientSocket, notice);
     }
+}
+
+void ChatServer::processVoiceMessage(QTcpSocket *clientSocket, const QJsonObject &json)
+{
+    QString senderName = socketUserMap.value(clientSocket, "未知用户");
+    QString recipientName = json["recipient"].toString();
+
+    qInfo() << "收到来自 " << senderName << " 发给 " << recipientName << " 的语音消息，准备转发。";
+
+    // 构建要转发给接收者的消息
+    QJsonObject forwardJson;
+    forwardJson["type"] = "new_voice_message"; // 使用新类型，以便客户端区分
+    forwardJson["sender"] = senderName;
+    forwardJson["duration_ms"] = json["duration_ms"].toInt();
+    forwardJson["format"] = json["format"].toString();
+    forwardJson["data"] = json["data"].toString();
+    forwardJson["channel"] = recipientName; // "世界频道" 或 私聊对象名
+
+    // 判断是私聊还是群聊
+    if (recipientName == "世界频道") {
+        // 广播给除了自己以外的所有人
+        for (QTcpSocket *otherSocket : clientConnections) {
+            if (otherSocket != clientSocket) {
+                sendMessage(otherSocket, forwardJson);
+            }
+        }
+        qInfo() << "已将语音消息广播到世界频道。";
+    } else {//私聊
+        QTcpSocket *recipientSocket = userSocketMap.value(recipientName, nullptr);
+        if (recipientSocket) {
+            sendMessage(recipientSocket, forwardJson);
+            qInfo() << "已将语音消息成功转发给 " << recipientName;
+        } else {
+            qWarning() << senderName << " 尝试向离线用户 " << recipientName << " 发送语音消息。";
+        }
+
+    }
+
 }
 
 void ChatServer::broadcastUserList()
