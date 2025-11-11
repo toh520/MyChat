@@ -47,8 +47,13 @@ ChatWindow::ChatWindow(QTcpSocket *Socket,const QJsonArray &initialUsers,const Q
 
     //获取用户列表
     ui->userListWidget->clear();
-    for(const QJsonValue &user:initialUsers){
-        ui->userListWidget->addItem(user.toString());
+    for(const QJsonValue &userValue : initialUsers){ // <--- 修改点
+        QString user = userValue.toString();
+        if(user == myUsername){
+            ui->userListWidget->addItem(user + " (我)");
+        } else {
+            ui->userListWidget->addItem(user);
+        }
     }
 
     currentPrivateChatUser = ""; // 初始化为空，表示当前是群聊模式
@@ -299,8 +304,16 @@ void ChatWindow::onSocketReadyRead()
             } else if (type == "user_list_update") {
                 QJsonArray usersArray = jsonObj["users"].toArray();
                 ui->userListWidget->clear();
-                for (const QJsonValue &user : usersArray) {
-                    ui->userListWidget->addItem(user.toString());
+                // for (const QJsonValue &user : usersArray) {
+                //     ui->userListWidget->addItem(user.toString());
+                // }
+                for (const QJsonValue &userValue : usersArray) { // <--- 修改点
+                    QString user = userValue.toString();
+                    if(user == myUsername){
+                        ui->userListWidget->addItem(user + " (我)");
+                    } else {
+                        ui->userListWidget->addItem(user);
+                    }
                 }
             }else if(type=="new_private_message"){
                 QString sender = jsonObj["sender"].toString();
@@ -677,6 +690,11 @@ void ChatWindow::requestHistoryForChannel(const QString &channel)
 void ChatWindow::on_userListWidget_itemDoubleClicked(QListWidgetItem *item)
 {
     QString clickedUser = item->text();
+
+    if (clickedUser.endsWith(" (我)")) {
+        clickedUser = clickedUser.left(clickedUser.length() - 4);
+    }
+
 
     switchToOrOpenPrivateChat(clickedUser);
 

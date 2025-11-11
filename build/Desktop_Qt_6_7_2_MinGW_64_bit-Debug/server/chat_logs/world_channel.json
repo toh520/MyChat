@@ -340,5 +340,11 @@
         "text": "22",
         "timestamp": "2025-11-11T21:16:18",
         "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "测试三个人的群聊",
+        "timestamp": "2025-11-11T21:40:33",
+        "type": "new_chat_message"
     }
 ]
