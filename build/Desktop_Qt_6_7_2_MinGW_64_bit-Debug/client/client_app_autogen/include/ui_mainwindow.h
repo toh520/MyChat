@@ -11,12 +11,14 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QGridLayout>
 #include <QtWidgets/QHBoxLayout>
 #include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QMainWindow>
 #include <QtWidgets/QMenuBar>
 #include <QtWidgets/QPushButton>
+#include <QtWidgets/QSpacerItem>
 #include <QtWidgets/QStatusBar>
 #include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
@@ -27,7 +29,8 @@ class Ui_MainWindow
 {
 public:
     QWidget *centralwidget;
-    QWidget *widget;
+    QGridLayout *gridLayout;
+    QSpacerItem *verticalSpacer;
     QVBoxLayout *verticalLayout;
     QHBoxLayout *horizontalLayout_3;
     QLabel *label_4;
@@ -41,6 +44,7 @@ public:
     QLineEdit *passwordLineEdit;
     QPushButton *loginButton;
     QLabel *errorLabel;
+    QSpacerItem *verticalSpacer_2;
     QMenuBar *menubar;
     QStatusBar *statusbar;
 
@@ -51,20 +55,22 @@ public:
         MainWindow->resize(317, 301);
         centralwidget = new QWidget(MainWindow);
         centralwidget->setObjectName("centralwidget");
-        widget = new QWidget(centralwidget);
-        widget->setObjectName("widget");
-        widget->setGeometry(QRect(6, 0, 261, 221));
-        verticalLayout = new QVBoxLayout(widget);
+        gridLayout = new QGridLayout(centralwidget);
+        gridLayout->setObjectName("gridLayout");
+        verticalSpacer = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
+
+        gridLayout->addItem(verticalSpacer, 2, 0, 1, 1);
+
+        verticalLayout = new QVBoxLayout();
         verticalLayout->setObjectName("verticalLayout");
-        verticalLayout->setContentsMargins(0, 0, 0, 0);
         horizontalLayout_3 = new QHBoxLayout();
         horizontalLayout_3->setObjectName("horizontalLayout_3");
-        label_4 = new QLabel(widget);
+        label_4 = new QLabel(centralwidget);
         label_4->setObjectName("label_4");
 
         horizontalLayout_3->addWidget(label_4);
 
-        ipLineEdit = new QLineEdit(widget);
+        ipLineEdit = new QLineEdit(centralwidget);
         ipLineEdit->setObjectName("ipLineEdit");
 
         horizontalLayout_3->addWidget(ipLineEdit);
@@ -72,7 +78,7 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_3);
 
-        label = new QLabel(widget);
+        label = new QLabel(centralwidget);
         label->setObjectName("label");
         QFont font;
         font.setPointSize(16);
@@ -83,12 +89,12 @@ public:
 
         horizontalLayout = new QHBoxLayout();
         horizontalLayout->setObjectName("horizontalLayout");
-        label_2 = new QLabel(widget);
+        label_2 = new QLabel(centralwidget);
         label_2->setObjectName("label_2");
 
         horizontalLayout->addWidget(label_2);
 
-        accountLineEdit = new QLineEdit(widget);
+        accountLineEdit = new QLineEdit(centralwidget);
         accountLineEdit->setObjectName("accountLineEdit");
 
         horizontalLayout->addWidget(accountLineEdit);
@@ -98,12 +104,12 @@ public:
 
         horizontalLayout_2 = new QHBoxLayout();
         horizontalLayout_2->setObjectName("horizontalLayout_2");
-        label_3 = new QLabel(widget);
+        label_3 = new QLabel(centralwidget);
         label_3->setObjectName("label_3");
 
         horizontalLayout_2->addWidget(label_3);
 
-        passwordLineEdit = new QLineEdit(widget);
+        passwordLineEdit = new QLineEdit(centralwidget);
         passwordLineEdit->setObjectName("passwordLineEdit");
         passwordLineEdit->setEchoMode(QLineEdit::EchoMode::Password);
 
@@ -112,16 +118,24 @@ public:
 
         verticalLayout->addLayout(horizontalLayout_2);
 
-        loginButton = new QPushButton(widget);
+        loginButton = new QPushButton(centralwidget);
         loginButton->setObjectName("loginButton");
 
         verticalLayout->addWidget(loginButton);
 
-        errorLabel = new QLabel(widget);
+        errorLabel = new QLabel(centralwidget);
         errorLabel->setObjectName("errorLabel");
         errorLabel->setStyleSheet(QString::fromUtf8("color:red;"));
+        errorLabel->setAlignment(Qt::AlignmentFlag::AlignCenter);
 
         verticalLayout->addWidget(errorLabel);
+
+
+        gridLayout->addLayout(verticalLayout, 1, 0, 1, 1);
+
+        verticalSpacer_2 = new QSpacerItem(20, 40, QSizePolicy::Policy::Minimum, QSizePolicy::Policy::Expanding);
+
+        gridLayout->addItem(verticalSpacer_2, 0, 0, 1, 1);
 
         MainWindow->setCentralWidget(centralwidget);
         menubar = new QMenuBar(MainWindow);

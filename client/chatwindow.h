@@ -74,6 +74,8 @@ private:
     QString myUsername; // 存储当前登录的用户名
     QMap<QString, QTextBrowser*> sessionBrowsers;// 新增的核心数据结构：将会话ID映射到对应的消息显示框
 
+    QJsonObject firstMessageOfNewSession;//用于暂存新会话收到的第一条消息，以防止历史记录重复显示
+
     QUdpSocket *udpSocket;//用udp进行通话
     //存储当前通话对象的信息
     QHostAddress currentCallPeerAddress;
@@ -112,6 +114,9 @@ private://音频变量
 private://音频函数
     void startAudio(const QAudioDevice &inputDevice,const QAudioDevice &outDevice);//负责初始化并启动 QAudioSource (麦克风) 和 QAudioSink (扬声器)。
     void stopAudio();//停止音频流的辅助函数
+
+private://美化
+    QString createBubbleHtml(const QString &text, bool isMyMessage);//// 用于生成消息气泡HTML的辅助函数
 };
 
 #endif // CHATWINDOW_H

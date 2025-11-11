@@ -1,0 +1,9 @@
+[
+    {
+        "recipient": "11",
+        "sender": "33",
+        "text": "第一条历史消息",
+        "timestamp": "2025-11-11T21:19:44",
+        "type": "new_private_message"
+    }
+]

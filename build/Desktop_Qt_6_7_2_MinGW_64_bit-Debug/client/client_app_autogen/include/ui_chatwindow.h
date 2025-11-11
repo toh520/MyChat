@@ -11,10 +11,13 @@
 
 #include <QtCore/QVariant>
 #include <QtWidgets/QApplication>
+#include <QtWidgets/QHBoxLayout>
+#include <QtWidgets/QLabel>
 #include <QtWidgets/QLineEdit>
 #include <QtWidgets/QListWidget>
 #include <QtWidgets/QPushButton>
 #include <QtWidgets/QTabWidget>
+#include <QtWidgets/QVBoxLayout>
 #include <QtWidgets/QWidget>
 
 QT_BEGIN_NAMESPACE
@@ -22,36 +25,88 @@ QT_BEGIN_NAMESPACE
 class Ui_ChatWindow
 {
 public:
+    QHBoxLayout *horizontalLayout_2;
+    QVBoxLayout *verticalLayout_2;
+    QLabel *userListHeaderLabel;
     QListWidget *userListWidget;
-    QPushButton *sendButton;
-    QLineEdit *messageLineEdit;
+    QWidget *widget;
+    QVBoxLayout *verticalLayout;
     QTabWidget *chatTabWidget;
-    QPushButton *callButton;
+    QWidget *inputWidget;
+    QHBoxLayout *horizontalLayout;
     QPushButton *recordButton;
+    QLineEdit *messageLineEdit;
+    QPushButton *sendButton;
+    QPushButton *callButton;
 
     void setupUi(QWidget *ChatWindow)
     {
         if (ChatWindow->objectName().isEmpty())
             ChatWindow->setObjectName("ChatWindow");
-        ChatWindow->resize(376, 263);
+        ChatWindow->resize(800, 500);
+        horizontalLayout_2 = new QHBoxLayout(ChatWindow);
+        horizontalLayout_2->setObjectName("horizontalLayout_2");
+        verticalLayout_2 = new QVBoxLayout();
+        verticalLayout_2->setObjectName("verticalLayout_2");
+        userListHeaderLabel = new QLabel(ChatWindow);
+        userListHeaderLabel->setObjectName("userListHeaderLabel");
+
+        verticalLayout_2->addWidget(userListHeaderLabel);
+
         userListWidget = new QListWidget(ChatWindow);
         userListWidget->setObjectName("userListWidget");
-        userListWidget->setGeometry(QRect(10, 10, 121, 221));
-        sendButton = new QPushButton(ChatWindow);
-        sendButton->setObjectName("sendButton");
-        sendButton->setGeometry(QRect(320, 210, 51, 18));
-        messageLineEdit = new QLineEdit(ChatWindow);
-        messageLineEdit->setObjectName("messageLineEdit");
-        messageLineEdit->setGeometry(QRect(140, 210, 111, 19));
-        chatTabWidget = new QTabWidget(ChatWindow);
+
+        verticalLayout_2->addWidget(userListWidget);
+
+
+        horizontalLayout_2->addLayout(verticalLayout_2);
+
+        widget = new QWidget(ChatWindow);
+        widget->setObjectName("widget");
+        verticalLayout = new QVBoxLayout(widget);
+        verticalLayout->setObjectName("verticalLayout");
+        chatTabWidget = new QTabWidget(widget);
         chatTabWidget->setObjectName("chatTabWidget");
-        chatTabWidget->setGeometry(QRect(140, 10, 171, 181));
-        callButton = new QPushButton(ChatWindow);
-        callButton->setObjectName("callButton");
-        callButton->setGeometry(QRect(320, 20, 56, 18));
-        recordButton = new QPushButton(ChatWindow);
+        QSizePolicy sizePolicy(QSizePolicy::Policy::Expanding, QSizePolicy::Policy::Expanding);
+        sizePolicy.setHorizontalStretch(0);
+        sizePolicy.setVerticalStretch(1);
+        sizePolicy.setHeightForWidth(chatTabWidget->sizePolicy().hasHeightForWidth());
+        chatTabWidget->setSizePolicy(sizePolicy);
+
+        verticalLayout->addWidget(chatTabWidget);
+
+        inputWidget = new QWidget(widget);
+        inputWidget->setObjectName("inputWidget");
+        horizontalLayout = new QHBoxLayout(inputWidget);
+        horizontalLayout->setObjectName("horizontalLayout");
+        recordButton = new QPushButton(inputWidget);
         recordButton->setObjectName("recordButton");
-        recordButton->setGeometry(QRect(260, 210, 56, 18));
+
+        horizontalLayout->addWidget(recordButton);
+
+        messageLineEdit = new QLineEdit(inputWidget);
+        messageLineEdit->setObjectName("messageLineEdit");
+
+        horizontalLayout->addWidget(messageLineEdit);
+
+        sendButton = new QPushButton(inputWidget);
+        sendButton->setObjectName("sendButton");
+
+        horizontalLayout->addWidget(sendButton);
+
+        callButton = new QPushButton(inputWidget);
+        callButton->setObjectName("callButton");
+
+        horizontalLayout->addWidget(callButton);
+
+
+        verticalLayout->addWidget(inputWidget);
+
+
+        horizontalLayout_2->addWidget(widget);
+
+        horizontalLayout_2->setStretch(0, 1);
+        horizontalLayout_2->setStretch(1, 3);
 
         retranslateUi(ChatWindow);
 
@@ -64,9 +119,10 @@ public:
     void retranslateUi(QWidget *ChatWindow)
     {
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "Form", nullptr));
+        userListHeaderLabel->setText(QCoreApplication::translate("ChatWindow", "\345\234\250\347\272\277\347\224\250\346\210\267", nullptr));
+        recordButton->setText(QCoreApplication::translate("ChatWindow", "\346\214\211\344\275\217\345\275\225\351\237\263", nullptr));
         sendButton->setText(QCoreApplication::translate("ChatWindow", "\345\217\221\351\200\201", nullptr));
         callButton->setText(QCoreApplication::translate("ChatWindow", "\350\257\255\351\237\263\351\200\232\350\257\235", nullptr));
-        recordButton->setText(QCoreApplication::translate("ChatWindow", "\346\214\211\344\275\217\345\275\225\351\237\263", nullptr));
     } // retranslateUi
 
 };

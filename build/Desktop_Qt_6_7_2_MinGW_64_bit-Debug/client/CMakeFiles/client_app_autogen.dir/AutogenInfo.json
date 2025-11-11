@@ -251,7 +251,8 @@
 		"D:/newQT/Tools/CMake_64/share/cmake-3.29/Modules/CMakeFindDependencyMacro.cmake",
 		"D:/newQT/6.7.2/mingw_64/lib/cmake/Qt6Multimedia/Qt6QWindowsMediaPluginTargets.cmake",
 		"D:/newQT/6.7.2/mingw_64/lib/cmake/Qt6Multimedia/Qt6QWindowsMediaPluginTargets-relwithdebinfo.cmake",
-		"D:/newQT/6.7.2/mingw_64/lib/cmake/Qt6Multimedia/Qt6QWindowsMediaPluginAdditionalTargetInfo.cmake"
+		"D:/newQT/6.7.2/mingw_64/lib/cmake/Qt6Multimedia/Qt6QWindowsMediaPluginAdditionalTargetInfo.cmake",
+		"D:/code/qt/Mychat/client/res.qrc"
 	],
 	"CMAKE_SOURCE_DIR" : "D:/code/qt/Mychat",
 	"CROSS_CONFIG" : false,

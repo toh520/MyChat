@@ -19,6 +19,8 @@ add_executable(client_app
     mainwindow.ui
     chatwindow.h chatwindow.cpp chatwindow.ui
     callwindow.h callwindow.cpp callwindow.ui
+    res.qrc
+    style.qss
 )
 
 # 最后，把我们的程序 "client_app" 和它需要的 Qt6::Widgets 库链接起来

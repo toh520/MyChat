@@ -11,6 +11,8 @@
 
 #include <QThread>
 
+#include <QScrollBar>
+
 ChatWindow::ChatWindow(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ChatWindow)
@@ -212,7 +214,24 @@ void ChatWindow::on_sendButton_clicked()
 
     QTextBrowser *currentBrowser = sessionBrowsers.value(id);
     if(currentBrowser){
-        currentBrowser->append(QString("<font color='green'>[我]:</font> %1").arg(text));
+        //currentBrowser->append(QString("<font color='green'>[我]:</font> %1").arg(text));
+        // // 新代码：使用气泡
+        // QString bubbleHtml = createBubbleHtml(text, true); // true代表是自己的消息
+        // currentBrowser->insertHtml(bubbleHtml);
+
+        QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+        QString header = QString(
+                             "<div align='left' style='color: gray; font-size: 9pt;'>" // 新增 align='left'
+                             "  <span style='color: lightgreen; font-weight: bold;'>我</span> %1"
+                             "</div>"
+                             ).arg(currentTime);
+
+        QString body = QString(
+                           "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>" // 新增 align='left'
+                           ).arg(text.toHtmlEscaped());
+
+        currentBrowser->append(header + body);
+        currentBrowser->verticalScrollBar()->setValue(currentBrowser->verticalScrollBar()->maximum());
     }
 
     //清空输入栏
@@ -260,7 +279,21 @@ void ChatWindow::onSocketReadyRead()
                 //找到对应的世界频道
                 QTextBrowser *browser= sessionBrowsers.value("world_channel");
                 if(browser){
-                    browser->append(QString("[世界][%1]: %2").arg(sender).arg(text));
+                    //browser->append(QString("[世界][%1]: %2").arg(sender).arg(text));
+
+                    QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+                    QString header = QString(
+                                         "<div align='left' style='color: gray; font-size: 9pt;'>" // 新增 align='left'
+                                         "  <span style='color: lightblue; font-weight: bold;'>%1</span> (世界频道) %2"
+                                         "</div>"
+                                         ).arg(sender, currentTime);
+                    QString body = QString(
+                                       "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>" // 新增 align='left'
+                                       ).arg(text.toHtmlEscaped());
+
+                    browser->append(header + body);
+
+                    browser->verticalScrollBar()->setValue(browser->verticalScrollBar()->maximum());//定位到最下面
                 }
                 //ui->messageBrowser->append(QString("[世界][%1]: %2").arg(sender).arg(text));
             } else if (type == "user_list_update") {
@@ -272,31 +305,45 @@ void ChatWindow::onSocketReadyRead()
             }else if(type=="new_private_message"){
                 QString sender = jsonObj["sender"].toString();
                 QString text = jsonObj["text"].toString();
-                //ui->messageBrowser->append(QString("<font color='blue'>[私聊] 来自 [%1]:</font> %2").arg(sender).arg(text));
-                if(!sessionBrowsers.contains(sender)){
-                    // 如果不存在，说明这是对方第一次发来私聊
-                    // 我们需要自动为他创建一个新的标签页
-                    QWidget *w = new QWidget();
-                    QTextBrowser *t = new QTextBrowser();
-                    QVBoxLayout *v = new QVBoxLayout(w);
-                    v->setContentsMargins(0,0,0,0);
-                    v->addWidget(t);
-                    int i=ui->chatTabWidget->addTab(w,sender);
-                    sessionBrowsers.insert(sender,t);
-                    requestHistoryForChannel(sender);
-                }
+
+                switchToOrOpenPrivateChat(sender);
 
                 QTextBrowser *browser = sessionBrowsers.value(sender);
                 if(browser){
                     //填入消息内容
-                    browser->append(QString("<font color='blue'>[私聊] 来自 %1:</font> %2").arg(sender).arg(text));
-                }  
+                    //browser->append(QString("<font color='blue'>[私聊] 来自 %1:</font> %2").arg(sender).arg(text));
+                    // // 新代码：生成气泡
+                    // QString bubbleHtml = createBubbleHtml(text, false); // false代表别人的消息
+                    // browser->insertHtml(bubbleHtml);
+
+                    QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+                    QString header = QString(
+                                         "<div align='left' style='color: gray; font-size: 9pt;'>" // 新增 align='left'
+                                         "  <span style='color: #00BFFF; font-weight: bold;'>%1</span> %2"
+                                         "</div>"
+                                         ).arg(sender, currentTime);
+                    QString body = QString(
+                                       "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>" // 新增 align='left'
+                                       ).arg(text.toHtmlEscaped());
+
+                    browser->append(header + body);
+                    browser->verticalScrollBar()->setValue(browser->verticalScrollBar()->maximum());
+                }
             }else if(type=="history_response"){
                 QString channel = jsonObj["channel"].toString();
                 QJsonArray history = jsonObj["history"].toArray();
 
                 QTextBrowser *browser=sessionBrowsers.value(channel);
                 if(browser){
+
+                    // 先保存当前窗口已有的内容（也就是那条没来得及显示的第一条消息）
+                    QString currentContent = browser->toHtml();
+
+                    qDebug() << "===== currentContent 开头 =====";
+                    qDebug() << currentContent.left(200);
+                    qDebug() << "===== currentContent 结尾 =====";
+                    qDebug() << currentContent.right(100);
+
                     // 先清空，再加载历史记录
                     browser->clear();
 
@@ -307,19 +354,45 @@ void ChatWindow::onSocketReadyRead()
                         QString text = msgObj["text"].toString();
                         QString timestamp = msgObj["timestamp"].toString(); // 服务器记录的时间戳
 
-                        // 为了区分历史消息，我们可以用不同的颜色或格式
-                        QString formattedMessage;
-                        if (sender == myUsername) { // 如果是自己发的消息
-                            formattedMessage = QString("<font color='gray'>[%1]</font> <font color='green'>[我]:</font> <font color='gray'>%2</font>")
-                                                   .arg(timestamp.left(19).replace("T", " "))
-                                                   .arg(text);
-                        } else { // 别人发的消息
-                            formattedMessage = QString("<font color='gray'>[%1] [%2]: %3</font>")
-                                                   .arg(timestamp.left(19).replace("T", " "))
-                                                   .arg(sender)
-                                                   .arg(text);
+                        bool isMyMessage = (sender == myUsername);
+
+                        QString prefix = QString("[%1]: ").arg(sender);
+                        if(text.startsWith(prefix)){
+                            text = text.mid(prefix.length());
                         }
-                        browser->insertHtml(formattedMessage+"<br>");
+
+                        QString header;
+                        if (sender == myUsername) {
+                            header = QString("<div align='left' style='color: gray; font-size: 9pt;'><span style='color: lightgreen; font-weight: bold;'>我</span> %1</div>").arg(timestamp); // 新增 align='left'
+                        } else {
+                            header = QString("<div align='left' style='color: gray; font-size: 9pt;'><span style='color: lightblue; font-weight: bold;'>%1</span> %2</div>").arg(sender, timestamp); // 新增 align='left'
+                        }
+                        QString body = QString("<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>").arg(text.toHtmlEscaped()); // 新增 align='left'
+
+                        browser->append(header + body);
+
+                        // 为群聊历史消息加上发送者前缀
+                        // if (channel == "world_channel" && !isMyHistoryMessage) {
+                        //     text = QString("[%1]: %2").arg(sender, text);
+                        // }
+
+                        // // 生成并插入气泡
+                        // QString bubbleHtml = createBubbleHtml(text, isMyHistoryMessage);
+                        // browser->insertHtml(bubbleHtml);
+
+                        // 为了区分历史消息，我们可以用不同的颜色或格式
+                        // QString formattedMessage;
+                        // if (sender == myUsername) { // 如果是自己发的消息
+                        //     formattedMessage = QString("<font color='gray'>[%1]</font> <font color='green'>[我]:</font> <font color='gray'>%2</font>")
+                        //                            .arg(timestamp.left(19).replace("T", " "))
+                        //                            .arg(text);
+                        // } else { // 别人发的消息
+                        //     formattedMessage = QString("<font color='gray'>[%1] [%2]: %3</font>")
+                        //                            .arg(timestamp.left(19).replace("T", " "))
+                        //                            .arg(sender)
+                        //                            .arg(text);
+                        // }
+                        // browser->insertHtml(formattedMessage+"<br>");
 
                     }
 
@@ -327,6 +400,11 @@ void ChatWindow::onSocketReadyRead()
                     if (!history.isEmpty()) {
                         browser->append("<hr><em><p align='center' style='color:gray;'>--- 以上是历史消息 ---</p></em>");
                     }
+
+                    // 最后，把之前保存的内容重新追加回来！
+                    browser->append(currentContent);
+
+                    browser->verticalScrollBar()->setValue(browser->verticalScrollBar()->maximum());
                 }
             }/*else if(type == "call_response"||type == "call_offer"){//通话模块
                 QString peerName = jsonObj["peer_name"].toString();
@@ -491,25 +569,49 @@ void ChatWindow::onSocketReadyRead()
                 // 4. 在 UI 上显示可点击的链接
                 QString browserKey;
                 QString displayText;
-
+                QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+                QString header;
                 if (channel == "世界频道") {
                     browserKey = "world_channel"; // 使用内部key
-                    displayText = QString("[世界] 来自 %1: ").arg(sender);
+                    //isplayText = QString("[世界] 来自 %1: ").arg(sender);
+                    header = QString(
+                                 "<div align='left' style='color: gray; font-size: 9pt;'>"
+                                 "  <span style='color: lightblue; font-weight: bold;'>%1</span> (世界频道) %2"
+                                 "</div>"
+                                 ).arg(sender, currentTime);
                 } else {
                     // 如果是私聊，channel 就是私聊对象的名称。
                     // 但对于接收方来说，这条消息应该显示在与`sender`的聊天窗口里。
                     browserKey = sender;
-                    displayText = QString("来自 %1: ").arg(sender);
+                    //displayText = QString("来自 %1: ").arg(sender);
+
+                    if (!sessionBrowsers.contains(sender)) {
+                        qDebug() << "收到来自" << sender << "的第一条语音，自动创建窗口。";
+                        switchToOrOpenPrivateChat(sender);
+                    }
+
+                    header = QString(
+                                 "<div align='left' style='color: gray; font-size: 9pt;'>"
+                                 "  <span style='color: #00BFFF; font-weight: bold;'>%1</span> %2"
+                                 "</div>"
+                                 ).arg(sender, currentTime);
                 }
 
                 QTextBrowser *browser = sessionBrowsers.value(browserKey);
                 if(browser){
                     QString timeStr = QString::number(duration_ms / 1000.0, 'f', 1);
                     // 使用 <a> 标签创建一个链接，href 属性就是我们的唯一 ID
-                    QString voiceHtml = QString("<a href=\"%1\" style=\"text-decoration:none; color:blue;\">[点击播放 %2s 语音]</a>").arg(messageId).arg(timeStr);
-                    browser->append(displayText + voiceHtml);
-                }
+                    //QString voiceHtml = QString("<a href=\"%1\" style=\"text-decoration:none; color:blue;\">[点击播放 %2s 语音]</a>").arg(messageId).arg(timeStr);
+                    //browser->append(displayText + voiceHtml);
+                    QString voiceLink = QString("<a href=\"%1\" style=\"color:#5599FF; text-decoration:none;\">[点击播放 %2s 语音] 🎤</a>").arg(messageId).arg(timeStr);
+                    QString body = QString(
+                                       "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>"
+                                       ).arg(voiceLink);
 
+                    browser->append(header + body);
+
+                    browser->verticalScrollBar()->setValue(browser->verticalScrollBar()->maximum());
+                }
             }else{
 
             }
@@ -846,6 +948,34 @@ void ChatWindow::stopAudio()
     qInfo() << "所有通话资源已清理。";
 }
 
+QString ChatWindow::createBubbleHtml(const QString &text, bool isMyMessage)
+{
+    // 定义两种气泡的样式
+    QString bubbleStyle;
+    QString alignSide;
+
+    if (isMyMessage) {
+        // 自己消息的样式：蓝色背景
+        alignSide = "right";
+        bubbleStyle = "background-color: #0078D7; color: white; padding: 8px 12px; border-radius: 10px;";
+    } else {
+        // 别人消息的样式：灰色背景
+        alignSide = "left";
+        bubbleStyle = "background-color: #4A4A4A; color: white; padding: 8px 12px; border-radius: 10px;";
+    }
+
+    // 构建一个更简单、更可靠的HTML结构
+    // 使用 <p align="..."> 来确保每条消息占一行并正确对齐
+    // 使用 <span> 作为气泡，因为它是行内元素，宽度会自适应内容
+    QString html = QString(
+                       "<p align='%1' style='margin: 0px 0px 8px 0px;'>" // <p>标签确保了换行和消息间距
+                       "    <span style='%2'>%3</span>"                   // <span>作为气泡
+                       "</p>"
+                       ).arg(alignSide).arg(bubbleStyle).arg(text.toHtmlEscaped());
+
+    return html;
+}
+
 // //======================
 //     // 2. 修改 startAudio 函数
 //     void ChatWindow::startAudio(const QAudioDevice &inputDevice, const QAudioDevice &outDevice)
@@ -1143,6 +1273,13 @@ void ChatWindow::on_recordButton_released()
 
     sendMessage(voiceMessageObject);
 
+    // 1. 生成一个唯一的消息ID (和接收方的逻辑一样)
+    QString messageId = "voice_" + QString::number(QDateTime::currentMSecsSinceEpoch());
+
+    // 2. 将录制的原始音频数据存到本地的 map 中
+    receivedVoiceMessages.insert(messageId, recordedData);
+
+
     QString browserKey = recipient; // 默认key就是recipient的名字
     if (recipient == "世界频道") {
         browserKey = "world_channel"; // 如果是世界频道，则使用内部key
@@ -1152,7 +1289,29 @@ void ChatWindow::on_recordButton_released()
     QTextBrowser *currentBrowser = sessionBrowsers.value(browserKey);
     if(currentBrowser){
         QString timeStr = QString::number(duration_ms / 1000.0, 'f', 1); // 格式化为秒，保留一位小数
-        currentBrowser->append(QString("<font color='green'>[我]:</font> [发送了一条 %1s 的语音]").arg(timeStr));
+
+        QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+        QString header = QString(
+                             "<div align='left' style='color: gray; font-size: 9pt;'>"
+                             "  <span style='color: lightgreen; font-weight: bold;'>我</span> %1"
+                             "</div>"
+                             ).arg(currentTime);
+
+        // 语音链接，使用一个更亮的颜色
+        QString voiceLink = QString("<a href=\"%1\" style=\"color:#5599FF; text-decoration:none;\">[点击播放 %2s 语音] 🎤</a>").arg(messageId).arg(timeStr);
+        QString body = QString(
+                           "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>"
+                           ).arg(voiceLink);
+
+        currentBrowser->append(header + body);
+        // 创建和接收方一样的HTML链接
+        //QString voiceHtml = QString("<a href=\"%1\" style=\"text-decoration:none; color:green;\">[点击播放 %2s 语音]</a>").arg(messageId).arg(timeStr);
+
+        // 追加到自己的窗口，注意我们把字体颜色改成了 'green' 来区分
+        //currentBrowser->append(QString("<font color='green'>[我]:</font> %1").arg(voiceHtml));
+
+        //currentBrowser->append(QString("<font color='green'>[我]:</font> [发送了一条 %1s 的语音]").arg(timeStr));
+        currentBrowser->verticalScrollBar()->setValue(currentBrowser->verticalScrollBar()->maximum());
     }
 
 
