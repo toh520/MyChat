@@ -13,6 +13,9 @@
 
 #include <QScrollBar>
 
+#include <QFileDialog>
+#include <QFileInfo>
+
 ChatWindow::ChatWindow(QWidget *parent)
     : QWidget(parent)
     , ui(new Ui::ChatWindow)
@@ -287,11 +290,27 @@ void ChatWindow::onSocketReadyRead()
                     //browser->append(QString("[世界][%1]: %2").arg(sender).arg(text));
 
                     QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
-                    QString header = QString(
-                                         "<div align='left' style='color: gray; font-size: 9pt;'>" // 新增 align='left'
-                                         "  <span style='color: lightblue; font-weight: bold;'>%1</span> (世界频道) %2"
-                                         "</div>"
-                                         ).arg(sender, currentTime);
+                    // QString header = QString(
+                    //                      "<div align='left' style='color: gray; font-size: 9pt;'>" // 新增 align='left'
+                    //                      "  <span style='color: lightblue; font-weight: bold;'>%1</span> (世界频道) %2"
+                    //                      "</div>"
+                    //                      ).arg(sender, currentTime);
+                    QString header;
+                    if (sender == myUsername) {
+                        // 如果是自己发的消息
+                        header = QString(
+                                     "<div align='left' style='color: gray; font-size: 9pt;'>"
+                                     "  <span style='color: lightgreen; font-weight: bold;'>我</span> (世界频道) %1"
+                                     "</div>"
+                                     ).arg(currentTime);
+                    } else {
+                        // 如果是别人发的消息
+                        header = QString(
+                                     "<div align='left' style='color: gray; font-size: 9pt;'>"
+                                     "  <span style='color: lightblue; font-weight: bold;'>%1</span> (世界频道) %2"
+                                     "</div>"
+                                     ).arg(sender, currentTime);
+                    }
                     QString body = QString(
                                        "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>" // 新增 align='left'
                                        ).arg(text.toHtmlEscaped());
@@ -623,6 +642,50 @@ void ChatWindow::onSocketReadyRead()
 
                     browser->append(header + body);
 
+                    browser->verticalScrollBar()->setValue(browser->verticalScrollBar()->maximum());
+                }
+            }else if (type == "image_message" || type == "new_image_message") { // 同时处理两种类型
+                QString sender = jsonObj["sender"].toString();
+                QString base64_data = jsonObj["data"].toString();
+
+                // 确定图片应该显示在哪个聊天窗口
+                QString browserKey;
+                QString headerText;
+                QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+
+                if (type == "new_image_message") { // 根据类型判断是世界频道
+                    browserKey = "world_channel";
+                    headerText = QString(
+                                     "<div align='left' style='color: gray; font-size: 9pt;'>"
+                                     "  <span style='color: lightblue; font-weight: bold;'>%1</span> (世界频道) %2"
+                                     "</div>"
+                                     ).arg(sender, currentTime);
+                } else { // image_message 就是私聊
+                    browserKey = sender; // 对于接收方，私聊窗口的 key 永远是发送方的名字
+
+                    // 如果是来自一个新朋友的第一条图片消息，我们必须先为他创建聊天窗口
+                    if (!sessionBrowsers.contains(browserKey)) {
+                        qDebug() << "收到来自新朋友 " << browserKey << " 的第一张图片，自动创建窗口。";
+                        switchToOrOpenPrivateChat(browserKey);
+                    }
+
+                    headerText = QString(
+                                     "<div align='left' style='color: gray; font-size: 9pt;'>"
+                                     "  <span style='color: #00BFFF; font-weight: bold;'>%1</span> %2"
+                                     "</div>"
+                                     ).arg(sender, currentTime);
+                }
+
+                QTextBrowser *browser = sessionBrowsers.value(browserKey);
+                if (browser) {
+                    // 使用 <img> 标签显示图片
+                    QString imageHtml = QString("<img src='data:image/jpeg;base64,%1' width='200'/>")
+                                            .arg(base64_data);
+                    QString body = QString(
+                                       "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>"
+                                       ).arg(imageHtml);
+
+                    browser->append(headerText + body);
                     browser->verticalScrollBar()->setValue(browser->verticalScrollBar()->maximum());
                 }
             }else{
@@ -1401,5 +1464,80 @@ void ChatWindow::onVoiceMessageClicked(const QUrl &url)
 
     tempAudioSink->start(buffer);
     qDebug() << "正在播放语音消息(使用临时的 AudioSink 播放)";
+}
+
+
+void ChatWindow::on_imageButton_clicked()
+{
+    // 1. 打开文件选择对话框
+    QString filePath = QFileDialog::getOpenFileName(
+        this,
+        "选择一张图片",
+        "", // 默认打开路径
+        "图片文件 (*.png *.jpg *.jpeg *.bmp *.gif)"
+        );
+
+    if (filePath.isEmpty()) {
+        qDebug() << "没有选择任何文件。";
+        return;
+    }
+
+    // 2. 读取文件内容
+    QFile file(filePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qWarning() << "无法打开图片文件:" << filePath;
+        return;
+    }
+    QByteArray imageData = file.readAll();
+    file.close();
+
+    //检查文件大小，避免发送过大的文件
+    if (imageData.size() > 5 * 1024 * 1024) { // 限制为 5MB
+        qWarning() << "图片文件过大 (超过5MB)，取消发送。";
+        // 这里可以弹出一个提示框告诉用户
+        return;
+    }
+
+
+    // 3. 获取当前聊天对象
+    int currentIndex = ui->chatTabWidget->currentIndex();
+    if (currentIndex == -1) {
+        qWarning() << "没有选择聊天窗口，无法发送图片。";
+        return;
+    }
+    QString recipient = ui->chatTabWidget->tabText(currentIndex);
+
+    // 4. 构建 JSON 对象
+    QJsonObject imageMessageObject;
+    imageMessageObject["type"] = "image_message";
+    imageMessageObject["recipient"] = recipient;
+    imageMessageObject["filename"] = QFileInfo(filePath).fileName(); // 获取文件名
+    imageMessageObject["data"] = QString(imageData.toBase64());    // 将图片数据转为 Base64
+
+    // 5. 发送消息
+    sendMessage(imageMessageObject);
+
+    // 6. 在自己的聊天窗口立即显示图片
+    QString browserKey = (recipient == "世界频道") ? "world_channel" : recipient;
+    QTextBrowser *currentBrowser = sessionBrowsers.value(browserKey);
+    if(currentBrowser){
+        QString currentTime = QDateTime::currentDateTime().toString("hh:mm:ss");
+        QString header = QString(
+                             "<div align='left' style='color: gray; font-size: 9pt;'>"
+                             "  <span style='color: lightgreen; font-weight: bold;'>我</span> %1"
+                             "</div>"
+                             ).arg(currentTime);
+
+        // 使用 <img> 标签来显示 Base64 图片
+        QString imageHtml = QString("<img src='data:image/jpeg;base64,%1' width='200'/>")
+                                .arg(QString(imageData.toBase64()));
+
+        QString body = QString(
+                           "<div align='left' style='font-size: 11pt; margin-left: 10px; margin-bottom: 10px;'>%1</div>"
+                           ).arg(imageHtml);
+
+        currentBrowser->append(header + body);
+        currentBrowser->verticalScrollBar()->setValue(currentBrowser->verticalScrollBar()->maximum());
+    }
 }
 

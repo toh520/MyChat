@@ -411,5 +411,26 @@
         "text": "测试测试",
         "timestamp": "2025-11-11T21:41:39",
         "type": "new_private_message"
+    },
+    {
+        "recipient": "22",
+        "sender": "11",
+        "text": "你好",
+        "timestamp": "2025-11-11T22:10:29",
+        "type": "new_private_message"
+    },
+    {
+        "recipient": "22",
+        "sender": "11",
+        "text": "你好",
+        "timestamp": "2025-11-11T22:17:48",
+        "type": "new_private_message"
+    },
+    {
+        "recipient": "11",
+        "sender": "22",
+        "text": "你好",
+        "timestamp": "2025-11-11T22:17:57",
+        "type": "new_private_message"
     }
 ]

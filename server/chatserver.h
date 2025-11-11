@@ -49,7 +49,7 @@ private:
     void processAcceptCall(QTcpSocket *clientSocket, const QJsonObject &json);//接听
     void processRejectCall(QTcpSocket *clientSocket, const QJsonObject &json);//拒接
     void processVoiceMessage(QTcpSocket *clientSocket, const QJsonObject &json);//发送语音消息
-
+    void processImageMessage(QTcpSocket *senderSocket, const QJsonObject &json);//发送图片
 
     void broadcastUserList();//收集当前所有用户名并广播出去
     void loadUsers();//json文件里加载用户的函数

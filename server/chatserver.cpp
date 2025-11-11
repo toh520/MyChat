@@ -218,7 +218,9 @@ void ChatServer::processMessage(QTcpSocket *clientSocket, const QJsonObject &jso
             processRejectCall(clientSocket, json);
         }else if(type == "voice_message"){
             processVoiceMessage(clientSocket,json);
-        }else{
+        }else if(type == "image_message"){      // +++ 新增开始 +++
+            processImageMessage(clientSocket,json); // 我们等下会创建这个函数
+        } else{
             qWarning()<<"收到未知类型的消息"<<type;
         }
     }else{
@@ -597,6 +599,43 @@ void ChatServer::processVoiceMessage(QTcpSocket *clientSocket, const QJsonObject
 
     }
 
+}
+
+void ChatServer::processImageMessage(QTcpSocket *senderSocket, const QJsonObject &json)
+{
+    QString senderName = socketUserMap.value(senderSocket, "未知用户");
+    QString recipientName = json["recipient"].toString();
+
+    qInfo() << "收到来自 " << senderName << " 发给 " << recipientName << " 的图片消息，准备转发。";
+
+    // 创建一个新的JSON对象用于转发，并添加发送者信息
+    QJsonObject forwardJson = json;       // 复制原始json的所有字段 (type, data, filename等)
+    forwardJson["sender"] = senderName;   // 关键一步：添加发送者！
+
+    // 群发逻辑 (如果 recipient 是 "世界频道")
+    if (recipientName == "世界频道") {
+        // 我们需要修改type，以便客户端区分是世界频道还是私聊
+        forwardJson["type"] = "new_image_message";
+        forwardJson["channel"] = "世界频道";
+
+        for (QTcpSocket *otherSocket : clientConnections) {
+            if (otherSocket != senderSocket) {
+                sendMessage(otherSocket, forwardJson);
+            }
+        }
+        qInfo() << "已将图片消息广播到世界频道。";
+    }
+    // 私聊逻辑
+    else {
+        QTcpSocket *recipientSocket = userSocketMap.value(recipientName, nullptr);
+        if (recipientSocket) {
+            // 直接转发添加了sender的JSON
+            sendMessage(recipientSocket, forwardJson);
+            qInfo() << "已将图片消息成功转发给 " << recipientName;
+        } else {
+            qWarning() << senderName << " 尝试向离线用户 " << recipientName << " 发送图片消息。";
+        }
+    }
 }
 
 void ChatServer::broadcastUserList()

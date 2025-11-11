@@ -346,5 +346,47 @@
         "text": "测试三个人的群聊",
         "timestamp": "2025-11-11T21:40:33",
         "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "大家好",
+        "timestamp": "2025-11-11T22:10:04",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "你好",
+        "timestamp": "2025-11-11T22:18:16",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "你好",
+        "timestamp": "2025-11-11T22:23:10",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "22",
+        "text": "大家好",
+        "timestamp": "2025-11-11T22:24:38",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "你好",
+        "timestamp": "2025-11-11T22:24:43",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "11",
+        "text": "测试测试",
+        "timestamp": "2025-11-11T22:28:47",
+        "type": "new_chat_message"
+    },
+    {
+        "sender": "33",
+        "text": "成功",
+        "timestamp": "2025-11-11T22:35:12",
+        "type": "new_chat_message"
     }
 ]

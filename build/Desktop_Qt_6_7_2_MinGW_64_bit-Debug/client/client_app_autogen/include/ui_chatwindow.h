@@ -35,6 +35,7 @@ public:
     QWidget *inputWidget;
     QHBoxLayout *horizontalLayout;
     QPushButton *recordButton;
+    QPushButton *imageButton;
     QLineEdit *messageLineEdit;
     QPushButton *sendButton;
     QPushButton *callButton;
@@ -84,6 +85,11 @@ public:
 
         horizontalLayout->addWidget(recordButton);
 
+        imageButton = new QPushButton(inputWidget);
+        imageButton->setObjectName("imageButton");
+
+        horizontalLayout->addWidget(imageButton);
+
         messageLineEdit = new QLineEdit(inputWidget);
         messageLineEdit->setObjectName("messageLineEdit");
 
@@ -121,6 +127,7 @@ public:
         ChatWindow->setWindowTitle(QCoreApplication::translate("ChatWindow", "Form", nullptr));
         userListHeaderLabel->setText(QCoreApplication::translate("ChatWindow", "\345\234\250\347\272\277\347\224\250\346\210\267", nullptr));
         recordButton->setText(QCoreApplication::translate("ChatWindow", "\346\214\211\344\275\217\345\275\225\351\237\263", nullptr));
+        imageButton->setText(QCoreApplication::translate("ChatWindow", "\345\233\276\347\211\207", nullptr));
         sendButton->setText(QCoreApplication::translate("ChatWindow", "\345\217\221\351\200\201", nullptr));
         callButton->setText(QCoreApplication::translate("ChatWindow", "\350\257\255\351\237\263\351\200\232\350\257\235", nullptr));
     } // retranslateUi

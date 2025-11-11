@@ -66,6 +66,8 @@ private slots:
 
     void onVoiceMessageClicked(const QUrl &url); // 用于处理语音消息点击事件
 
+    void on_imageButton_clicked();
+
 private:
     Ui::ChatWindow *ui;
     QTcpSocket *socket;
